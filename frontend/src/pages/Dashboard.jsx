@@ -418,7 +418,7 @@ const Dashboard = ({ userRole, username, onLogout }) => {
                                 element={
                                     userRole === 'admin' 
                                         ? <Navigate to="/forecast" replace /> 
-                                        : <AssessmentForm username={username} />
+                                        : <AssessmentForm username={username} userRole={userRole} onLogout={onLogout} />
                                 } 
                             />
                             <Route path="/forecast" element={<FloodPrediction />} />

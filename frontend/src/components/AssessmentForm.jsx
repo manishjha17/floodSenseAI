@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import axios from 'axios'
-import { MapPin, UploadCloud, FileText, CheckCircle2, AlertTriangle, ShieldCheck, Activity, Download, Navigation2 } from 'lucide-react'
+import { MapPin, UploadCloud, FileText, CheckCircle2, AlertTriangle, ShieldCheck, Activity, Download, Navigation2, X, Lock, LogIn } from 'lucide-react'
 import MapComponent from './MapComponent'
 
-const AssessmentForm = ({ username }) => {
+const AssessmentForm = ({ username, userRole, onLogout }) => {
     const [address, setAddress] = useState('')
     const [coordinates, setCoordinates] = useState(null)
     const [image, setImage] = useState(null)
@@ -13,9 +13,17 @@ const AssessmentForm = ({ username }) => {
     const [result, setResult] = useState(null)
     const [feedbackStatus, setFeedbackStatus] = useState(null)
     const [searchError, setSearchError] = useState('')
+    const [showLoginPrompt, setShowLoginPrompt] = useState(false)
 
     const handleFeedback = async (status) => {
         if (!result) return
+        
+        // Block guests from submitting feedback to the DB
+        if (userRole === 'guest') {
+            setShowLoginPrompt(true)
+            return
+        }
+
         try {
             // Convert image to base64 if available
             let imageData = null
@@ -429,6 +437,35 @@ const AssessmentForm = ({ username }) => {
                     </div>
                 )}
             </div>
+
+            {/* Premium Login Prompt for Guests */}
+            {showLoginPrompt && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 animate-in fade-in duration-200">
+                    <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setShowLoginPrompt(false)} />
+                    <div className="relative w-full max-w-sm bg-[#0a0a0a] border border-white/10 shadow-2xl rounded-2xl p-8 flex flex-col items-center gap-5 text-center animate-in zoom-in-95 duration-200">
+                        <button onClick={() => setShowLoginPrompt(false)} className="absolute top-3 right-3 text-gray-500 hover:text-white p-1 rounded-lg transition-colors">
+                            <X size={18} />
+                        </button>
+                        <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shadow-[0_0_25px_rgba(99,102,241,0.15)]">
+                            <Lock size={28} className="text-indigo-400" />
+                        </div>
+                        <div className="space-y-1.5">
+                            <h2 className="text-xl font-bold text-white">Sign In Required</h2>
+                            <p className="text-sm text-gray-400 leading-relaxed">
+                                Submitting AI feedback is reserved for registered users. <br/> Please sign in to help us improve!
+                            </p>
+                        </div>
+                        <div className="w-full space-y-3 pt-1">
+                            <button onClick={onLogout} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition-all shadow-[0_0_15px_rgba(99,102,241,0.3)]">
+                                <LogIn size={16} /> Sign In Now
+                            </button>
+                            <button onClick={() => setShowLoginPrompt(false)} className="w-full py-2.5 rounded-xl text-sm text-gray-400 hover:text-gray-200 hover:bg-white/5 border border-white/10 hover:border-white/20 transition-all">
+                                Continue as Guest
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
