@@ -19,8 +19,9 @@ const LocationSelector = ({ setPosition, locationName, setLocationName }) => {
         setSearchError('');
 
         try {
-            // Free geocoding using Open-Meteo (more reliable than Nominatim for browser requests)
-            const response = await axios.get(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(searchQuery)}&count=1&format=json`);
+            // Use our secure backend proxy instead of direct external call 
+            // This prevents "Authorization Header" conflicts for logged-in users (Admins)
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/forecast/search?name=${encodeURIComponent(searchQuery)}`);
 
             if (response.data && response.data.results && response.data.results.length > 0) {
                 const { latitude, longitude, name, country } = response.data.results[0];

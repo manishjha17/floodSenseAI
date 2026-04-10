@@ -1,5 +1,24 @@
 const axios = require('axios');
 
+exports.searchLocation = async (req, res) => {
+    try {
+        const { name } = req.query;
+        if (!name) {
+            return res.status(400).json({ error: "Location name is required." });
+        }
+
+        console.log(`[Geocoding Request] Proxying search for: ${name}`);
+
+        // Call Open-Meteo Geocoding API from the server
+        const response = await axios.get(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=1&format=json`);
+
+        res.json(response.data);
+    } catch (error) {
+        console.error('[Geocoding Error] Failed to reach geocoding service:', error.message);
+        res.status(500).json({ error: "Geocoding service unavailable" });
+    }
+};
+
 exports.getForecast = async (req, res) => {
     try {
         const { latitude, longitude } = req.body;
