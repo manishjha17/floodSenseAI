@@ -11,9 +11,15 @@ exports.getForecast = async (req, res) => {
         console.log(`[Forecast Request] Forwarding to Python API: Lat ${latitude}, Lon ${longitude}`);
 
         const PYTHON_SERVICE_URL = process.env.PYTHON_SERVICE_URL || 'http://localhost:8001';
+        const HF_TOKEN = process.env.HF_TOKEN;
+
         const pythonResponse = await axios.post(`${PYTHON_SERVICE_URL}/forecast/`, {
             latitude,
             longitude
+        }, {
+            headers: {
+                ...(HF_TOKEN ? { 'Authorization': `Bearer ${HF_TOKEN}` } : {})
+            }
         });
 
         res.json(pythonResponse.data);

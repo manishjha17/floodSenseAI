@@ -14,24 +14,11 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Flood Damage Assessment ML Service")
 
-# Configure CORS (Restrict in production)
-frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
-node_url = os.getenv("NODE_SERVICE_URL", "http://localhost:8000")
-
-origins = [
-    frontend_url,
-    node_url,
-    "http://localhost:5173",
-    "http://localhost:8000",
-]
-
-# If explicitly set to * in environment, allow all
-if frontend_url == "*" or node_url == "*":
-    origins = ["*"]
-
+# Allow all origins for the ML service since it will be secured 
+# by a private Hugging Face Space token.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

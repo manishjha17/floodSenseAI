@@ -3,6 +3,7 @@ const FormData = require('form-data');
 const fs = require('fs');
 
 const PYTHON_SERVICE_URL = process.env.PYTHON_SERVICE_URL || 'http://localhost:8001';
+const HF_TOKEN = process.env.HF_TOKEN;
 
 exports.predictImage = async (req, res) => {
     try {
@@ -20,7 +21,8 @@ exports.predictImage = async (req, res) => {
 
         const response = await axios.post(`${PYTHON_SERVICE_URL}/predict/image`, formData, {
             headers: {
-                ...formData.getHeaders()
+                ...formData.getHeaders(),
+                ...(HF_TOKEN ? { 'Authorization': `Bearer ${HF_TOKEN}` } : {})
             }
         });
 
@@ -56,7 +58,8 @@ exports.predictText = async (req, res) => {
 
         const response = await axios.post(`${PYTHON_SERVICE_URL}/predict/text`, formData, {
             headers: {
-                ...formData.getHeaders()
+                ...formData.getHeaders(),
+                ...(HF_TOKEN ? { 'Authorization': `Bearer ${HF_TOKEN}` } : {})
             }
         });
 
@@ -77,7 +80,10 @@ exports.geocode = async (req, res) => {
         if (!address) return res.status(400).json({ detail: "Address required" });
 
         const response = await axios.get(`${PYTHON_SERVICE_URL}/predict/geocode`, {
-            params: { address }
+            params: { address },
+            headers: {
+                ...(HF_TOKEN ? { 'Authorization': `Bearer ${HF_TOKEN}` } : {})
+            }
         });
         res.json(response.data);
     } catch (error) {
