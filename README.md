@@ -1,6 +1,6 @@
-# FloodSense AI: Flood Damage Assessment Platform
+# floodSense AI: Flood Damage Assessment Platform
 
-FloodSense AI is a full-stack, AI-powered platform designed to automate and accelerate flood damage assessments. It combines satellite/image classification with text-based reporting to provide rapid insights for first responders and insurance auditors.
+floodSenseAI is a full-stack, AI-powered platform designed to automate and accelerate flood damage assessments. It combines satellite/image classification with text-based reporting to provide rapid insights for first responders and insurance auditors.
 
 ## 🚀 Key Features
 - **AI Image Classification**: Uses a PyTorch-based EfficientNet-B0 model to categorize structural damage into 4 levels: *Destroyed, Medium Damage, Low Damage, and No Damage*.
