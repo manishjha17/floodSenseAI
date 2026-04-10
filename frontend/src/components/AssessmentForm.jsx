@@ -146,6 +146,13 @@ const AssessmentForm = ({ username, userRole, onLogout }) => {
 
     const handleGenerateReport = async () => {
         if (!result) return
+
+        // Block guests from generating reports
+        if (userRole === 'guest') {
+            setShowLoginPrompt(true)
+            return
+        }
+
         try {
             const response = await axios.post(`${import.meta.env.VITE_API_URL}/report/generate`, {
                 address: address,
@@ -452,7 +459,7 @@ const AssessmentForm = ({ username, userRole, onLogout }) => {
                         <div className="space-y-1.5">
                             <h2 className="text-xl font-bold text-white">Sign In Required</h2>
                             <p className="text-sm text-gray-400 leading-relaxed">
-                                Submitting AI feedback is reserved for registered users. <br/> Please sign in to help us improve!
+                                Generating reports and submitting AI feedback is reserved for registered users. <br/> Please sign in to get full access!
                             </p>
                         </div>
                         <div className="w-full space-y-3 pt-1">
