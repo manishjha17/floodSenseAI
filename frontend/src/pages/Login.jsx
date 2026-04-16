@@ -163,6 +163,22 @@ const Login = ({ onLogin }) => {
         setSuccessMsg('')
         setIsLoading(true)
 
+        // Password Complexity Validation for Register/Reset
+        if (authMode === 'register' || authMode === 'reset-password') {
+            const pwd = authMode === 'register' ? password : newPassword;
+            const hasMinLen = pwd.length >= 8;
+            const hasLower = /[a-z]/.test(pwd);
+            const hasUpper = /[A-Z]/.test(pwd);
+            const hasNumber = /[0-9]/.test(pwd);
+            const hasSpecial = /[#.\-?!@$%^&*]/.test(pwd);
+
+            if (!(hasMinLen && hasLower && hasUpper && hasNumber && hasSpecial)) {
+                setError('Please meet all password security requirements.');
+                setIsLoading(false);
+                return;
+            }
+        }
+
         if (authMode === 'login') {
             try {
                 const response = await axios.post(`${import.meta.env.VITE_API_URL}/auth/login`, {
@@ -849,6 +865,29 @@ const Login = ({ onLogin }) => {
                                         rightIcon={showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                         onRightIconClick={() => setShowPassword(!showPassword)}
                                     />
+
+                                    {/* Password Validator UI (Live Feedback) */}
+                                    {authMode === 'register' && (
+                                        <div className="mt-4 grid grid-cols-2 gap-2 p-4 bg-black/40 border border-white/5 rounded-xl animate-in fade-in duration-300">
+                                            {[
+                                                { label: "Min. 8 characters", met: password.length >= 8 },
+                                                { label: "Lowercase letter", met: /[a-z]/.test(password) },
+                                                { label: "Uppercase letter", met: /[A-Z]/.test(password) },
+                                                { label: "Include number", met: /[0-9]/.test(password) },
+                                                { label: "Special character", met: /[#.\-?!@$%^&*]/.test(password) },
+                                            ].map((rule, idx) => (
+                                                <div key={idx} className={`flex items-center gap-2 text-[11px] transition-colors ${rule.met ? 'text-emerald-400' : 'text-slate-500'}`}>
+                                                    <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center border ${rule.met ? 'bg-emerald-500/20 border-emerald-500/50' : 'border-slate-700'}`}>
+                                                        {rule.met && <CheckCircle2 size={10} />}
+                                                    </div>
+                                                    <span>{rule.met ? 'Done: ' : ''}{rule.label}</span>
+                                                </div>
+                                            ))}
+                                            <div className="col-span-2 mt-2 pt-2 border-t border-white/5 text-[10px] text-slate-600">
+                                                Accepted symbols: <code className="text-slate-400">#.-?!@$%^&*</code>
+                                            </div>
+                                        </div>
+                                    )}
                                     {authMode === 'login' && (
                                         <div className="flex justify-end mt-2">
                                             <button
