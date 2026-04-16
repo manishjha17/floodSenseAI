@@ -47,6 +47,7 @@ const Login = ({ onLogin }) => {
     const [showPassword, setShowPassword] = useState(false)
     const [showNewPassword, setShowNewPassword] = useState(false)
     const [selectedRole, setSelectedRole] = useState('citizen')
+    const [passwordBlurred, setPasswordBlurred] = useState(false)
 
     // Registration extra fields
     const [fullName, setFullName] = useState('')
@@ -861,32 +862,49 @@ const Login = ({ onLogin }) => {
                                         type={showPassword ? "text" : "password"}
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
+                                        onFocus={() => setPasswordBlurred(false)}
+                                        onBlur={() => setPasswordBlurred(true)}
                                         required
                                         rightIcon={showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                         onRightIconClick={() => setShowPassword(!showPassword)}
                                     />
 
-                                    {/* Password Validator UI (Live Feedback) */}
+                                    {/* Password Validator UI (Context-Aware) */}
                                     {authMode === 'register' && (
-                                        <div className="mt-4 grid grid-cols-2 gap-2 p-4 bg-black/40 border border-white/5 rounded-xl animate-in fade-in duration-300">
-                                            {[
+                                        (() => {
+                                            const rules = [
                                                 { label: "Min. 8 characters", met: password.length >= 8 },
                                                 { label: "Lowercase letter", met: /[a-z]/.test(password) },
                                                 { label: "Uppercase letter", met: /[A-Z]/.test(password) },
                                                 { label: "Include number", met: /[0-9]/.test(password) },
                                                 { label: "Special character", met: /[#.\-?!@$%^&*]/.test(password) },
-                                            ].map((rule, idx) => (
-                                                <div key={idx} className={`flex items-center gap-2 text-[11px] transition-colors ${rule.met ? 'text-emerald-400' : 'text-slate-500'}`}>
-                                                    <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center border ${rule.met ? 'bg-emerald-500/20 border-emerald-500/50' : 'border-slate-700'}`}>
-                                                        {rule.met && <CheckCircle2 size={10} />}
-                                                    </div>
-                                                    <span>{rule.met ? 'Done: ' : ''}{rule.label}</span>
+                                            ];
+                                            const allMet = rules.every(r => r.met);
+                                            
+                                            // Only show if not all met, or if we haven't finished typing (not blurred)
+                                            if (allMet && passwordBlurred) return null;
+
+                                            return (
+                                                <div className={`mt-4 grid grid-cols-2 gap-2 p-4 bg-black/40 border rounded-xl transition-all duration-300 ${passwordBlurred && !allMet ? 'border-rose-500/30 ring-1 ring-rose-500/20' : 'border-white/5'}`}>
+                                                    {rules.map((rule, idx) => {
+                                                        const showRed = passwordBlurred && !rule.met;
+                                                        return (
+                                                            <div key={idx} className={`flex items-center gap-2 text-[11px] transition-colors ${rule.met ? 'text-emerald-400' : showRed ? 'text-rose-400' : 'text-slate-500'}`}>
+                                                                <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center border transition-all ${rule.met ? 'bg-emerald-500/20 border-emerald-500/50' : showRed ? 'bg-rose-500/10 border-rose-500/50' : 'border-slate-700'}`}>
+                                                                    {rule.met ? <CheckCircle2 size={10} /> : showRed ? <X size={8} /> : null}
+                                                                </div>
+                                                                <span>{rule.met ? 'Done: ' : ''}{rule.label}</span>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                    {!allMet && (
+                                                        <div className="col-span-2 mt-2 pt-2 border-t border-white/5 text-[10px] text-slate-600">
+                                                            Accepted symbols: <code className="text-slate-400">#.-?!@$%^&*</code>
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            ))}
-                                            <div className="col-span-2 mt-2 pt-2 border-t border-white/5 text-[10px] text-slate-600">
-                                                Accepted symbols: <code className="text-slate-400">#.-?!@$%^&*</code>
-                                            </div>
-                                        </div>
+                                            );
+                                        })()
                                     )}
                                     {authMode === 'login' && (
                                         <div className="flex justify-end mt-2">
