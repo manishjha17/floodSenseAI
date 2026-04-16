@@ -212,10 +212,11 @@ const FindResources = () => {
             ];
 
             try {
-                // Fetch real-world resources using OpenStreetMap Overpass (Optimized query with exact indexed matches)
-                const query = `[out:json][timeout:25];(node["amenity"="hospital"](around:4000,${lat},${lon});node["amenity"="clinic"](around:4000,${lat},${lon});node["amenity"="police"](around:4000,${lat},${lon});node["amenity"="fire_station"](around:4000,${lat},${lon});node["amenity"="shelter"](around:4000,${lat},${lon});node["amenity"="social_facility"](around:4000,${lat},${lon});node["amenity"="restaurant"](around:4000,${lat},${lon});node["amenity"="drinking_water"](around:4000,${lat},${lon});node["shop"="supermarket"](around:4000,${lat},${lon}););out body 50;`;
+                // Fetch real-world resources using the primary Global Overpass API
+                // Increased radius to 10000 (10km) for better results in less dense areas
+                const query = `[out:json][timeout:30];(node["amenity"~"hospital|clinic|police|fire_station|shelter|social_facility|restaurant|drinking_water"](around:10000,${lat},${lon});node["shop"~"supermarket|convenience"](around:10000,${lat},${lon}););out body 60;`;
                 
-                const res = await fetch(`https://overpass.openstreetmap.fr/api/interpreter`, {
+                const res = await fetch(`https://overpass-api.de/api/interpreter`, {
                     method: 'POST',
                     body: `data=${encodeURIComponent(query)}`,
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
