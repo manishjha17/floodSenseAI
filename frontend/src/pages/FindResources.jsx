@@ -282,11 +282,6 @@ const FindResources = () => {
                         locationName={locationName}
                         setLocationName={setLocationName}
                     />
-
-                    <div className="flex items-start gap-3 bg-indigo-500/10 border border-indigo-500/20 p-4 rounded-xl text-indigo-300 text-sm shadow-md">
-                        <Info size={18} className="mt-0.5 flex-shrink-0" />
-                        <p>Note: These resource locations are mapped dynamically based on the central point selected.</p>
-                    </div>
                 </div>
 
                 <div className="md:col-span-2">
