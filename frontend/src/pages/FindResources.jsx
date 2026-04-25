@@ -105,7 +105,7 @@ const LocationSelector = ({ setPosition, locationName, setLocationName }) => {
                 
                 try {
                     // Reverse geocoding using OpenStreetMap Nominatim
-                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=en`);
                     if (!res.ok) throw new Error('Reverse geocoding failed');
                     const data = await res.json();
                     
