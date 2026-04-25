@@ -86,21 +86,24 @@ const AssessmentForm = ({ username, userRole, onLogout }) => {
                     if (!res.ok) throw new Error('Reverse geocoding failed');
                     const data = await res.json();
                     
-                    // Helper to detect Hindi characters
-                    const isHindi = (text) => /[\u0900-\u097F]/.test(text || "");
+                    // Helper to force Latin/ASCII only
+                    const toLatin = (text) => (text || "").replace(/[^\x20-\x7E]/g, "").trim();
 
                     if (data && data.display_name) {
                         const englishName = data.namedetails?.['name:en'];
-                        const addressParts = data.display_name.split(',');
                         
                         if (englishName) {
+                            const addressParts = data.display_name.split(',');
                             addressParts[0] = englishName;
-                            setAddress(addressParts.slice(0, 3).join(', '));
+                            setAddress(toLatin(addressParts.slice(0, 3).join(', ')));
                         } else {
-                            // Filter out parts that are purely Hindi
-                            const latinParts = addressParts.filter(p => !isHindi(p)).slice(0, 3);
-                            if (latinParts.length > 0) {
-                                setAddress(latinParts.join(', '));
+                            // Filter out everything except Latin characters
+                            const cleanedParts = data.display_name.split(',')
+                                .map(p => toLatin(p))
+                                .filter(p => p.length > 1); // Skip empty or single-char artifacts
+
+                            if (cleanedParts.length > 0) {
+                                setAddress(cleanedParts.slice(0, 3).join(', '));
                             } else {
                                 setAddress("Current Location (Verified)");
                             }

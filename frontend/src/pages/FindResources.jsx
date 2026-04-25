@@ -109,22 +109,17 @@ const LocationSelector = ({ setPosition, locationName, setLocationName }) => {
                     if (!res.ok) throw new Error('Reverse geocoding failed');
                     const data = await res.json();
                     
-                    // Helper to detect Hindi characters
-                    const isHindi = (text) => /[\u0900-\u097F]/.test(text || "");
+                    // Helper to force Latin/ASCII only (strips Hindi and other scripts)
+                    const toLatin = (text) => (text || "").replace(/[^\x20-\x7E]/g, "").trim();
                     
                     if (data && data.address) {
                         const addr = data.address;
                         const details = data.namedetails || {};
                         
-                        // Prioritize English names from namedetails, and filter out Hindi strings
-                        let localArea = details['name:en'] || addr.suburb || addr.neighbourhood || addr.village || addr.city_district || "";
-                        if (isHindi(localArea)) localArea = ""; // Skip if only Hindi name available
-                        
-                        let city = addr.city || addr.town || addr.county || "";
-                        if (isHindi(city)) city = "";
-
-                        let state = addr.state || "";
-                        if (isHindi(state)) state = "";
+                        // Strip non-Latin characters from all components
+                        let localArea = toLatin(details['name:en'] || addr.suburb || addr.neighbourhood || addr.village || addr.city_district);
+                        let city = toLatin(addr.city || addr.town || addr.county);
+                        let state = toLatin(addr.state);
                         
                         if (localArea && city) {
                             setLocationName(`${localArea}, ${city}`);
@@ -132,14 +127,17 @@ const LocationSelector = ({ setPosition, locationName, setLocationName }) => {
                             setLocationName(`${city}, ${state}`);
                         } else if (city) {
                             setLocationName(city);
-                        } else if (data.display_name && !isHindi(data.display_name)) {
-                            const parts = data.display_name.split(',').slice(0, 2).join(', ');
-                            setLocationName(parts);
                         } else {
-                            setLocationName("Current Location (Verified)");
+                            // Last resort: Clean up display_name
+                            const cleanDisplay = toLatin(data.display_name);
+                            if (cleanDisplay && cleanDisplay.length > 5) {
+                                setLocationName(cleanDisplay.split(',').slice(0, 2).join(', '));
+                            } else {
+                                setLocationName("Current Location (Verified)");
+                            }
                         }
                     } else {
-                        setLocationName("Your Current Location");
+                        setLocationName("Current Location (Verified)");
                     }
                 } catch(err) {
                     setLocationName("Your Current Location");
