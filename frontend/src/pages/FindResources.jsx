@@ -212,27 +212,47 @@ const FindResources = () => {
             ];
 
             try {
-                // Fetch real-world resources using the primary Global Overpass API
-                // Increased radius to 10000 (10km) for better results in less dense areas
-                const query = `[out:json][timeout:30];(node["amenity"~"hospital|clinic|police|fire_station|shelter|social_facility|restaurant|drinking_water"](around:10000,${lat},${lon});node["shop"~"supermarket|convenience"](around:10000,${lat},${lon}););out body 60;`;
-                
-                const res = await fetch(`https://overpass-api.de/api/interpreter`, {
-                    method: 'POST',
-                    body: `data=${encodeURIComponent(query)}`,
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-                });
-                if (!res.ok) throw new Error('Overpass API failed');
-                const data = await res.json();
-                const response = { data };
-                
-                const elements = response.data.elements || [];
-                if (elements.length === 0) {
-                    setResources(generateMockFallback());
-                    return;
-                }
+            const mirrors = [
+                'https://overpass-api.de/api/interpreter',
+                'https://overpass.kumi.systems/api/interpreter',
+                'https://lz4.overpass-api.de/api/interpreter',
+                'https://z.overpass-api.de/api/interpreter'
+            ];
 
-                // Map OSM tags to our UI categories
-                const realResources = elements.map(node => {
+            let data = null;
+            let success = false;
+
+            for (const mirror of mirrors) {
+                try {
+                    const query = `[out:json][timeout:30];(node["amenity"~"hospital|clinic|police|fire_station|shelter|social_facility|restaurant|drinking_water"](around:10000,${lat},${lon});node["shop"~"supermarket|convenience"](around:10000,${lat},${lon}););out body 60;`;
+                    
+                    const res = await fetch(mirror, {
+                        method: 'POST',
+                        body: `data=${encodeURIComponent(query)}`,
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+                    });
+                    
+                    if (res.ok) {
+                        data = await res.json();
+                        if (data && data.elements && data.elements.length > 0) {
+                            success = true;
+                            break;
+                        }
+                    }
+                } catch (err) {
+                    console.warn(`Mirror ${mirror} failed, trying next...`);
+                }
+            }
+
+            if (!success) {
+                setResources(generateMockFallback());
+                return;
+            }
+
+            const elements = data.elements || [];
+            
+            // Map OSM tags to our UI categories
+            const realResources = elements.map(node => {
                     let type = 'Resource';
                     const tags = node.tags || {};
                     const amenity = tags.amenity || '';
