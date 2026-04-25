@@ -81,15 +81,25 @@ const AssessmentForm = ({ username, userRole, onLogout }) => {
                 setAddress("Locating...");
 
                 try {
-                    // Reverse geocoding using OpenStreetMap Nominatim
-                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=en`);
+                    // Reverse geocoding using OpenStreetMap Nominatim with namedetails
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=en&namedetails=1`);
                     if (!res.ok) throw new Error('Reverse geocoding failed');
                     const data = await res.json();
                     
                     if (data && data.display_name) {
-                        // Extract a concise version of the address (first 2-3 parts)
-                        const parts = data.display_name.split(',').slice(0, 3).join(', ');
-                        setAddress(parts);
+                        // Check if there's a specific English name in namedetails
+                        const englishName = data.namedetails?.['name:en'];
+                        
+                        if (englishName) {
+                            // If we have an English name, use it followed by the rest of the address
+                            const addressParts = data.display_name.split(',');
+                            addressParts[0] = englishName; // Replace local name with English name
+                            setAddress(addressParts.slice(0, 3).join(', '));
+                        } else {
+                            // Fallback to display_name as usual
+                            const parts = data.display_name.split(',').slice(0, 3).join(', ');
+                            setAddress(parts);
+                        }
                     } else {
                         setAddress("Your Current Location");
                     }

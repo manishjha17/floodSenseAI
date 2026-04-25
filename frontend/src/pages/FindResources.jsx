@@ -104,14 +104,17 @@ const LocationSelector = ({ setPosition, locationName, setLocationName }) => {
                 setLocationName("Locating...");
                 
                 try {
-                    // Reverse geocoding using OpenStreetMap Nominatim
-                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=en`);
+                    // Reverse geocoding using OpenStreetMap Nominatim with namedetails for English fallback
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=en&namedetails=1`);
                     if (!res.ok) throw new Error('Reverse geocoding failed');
                     const data = await res.json();
                     
                     if (data && data.address) {
                         const addr = data.address;
-                        const localArea = addr.suburb || addr.neighbourhood || addr.village || addr.city_district || "";
+                        const details = data.namedetails || {};
+                        
+                        // Prioritize English names from namedetails if available
+                        const localArea = details['name:en'] || addr.suburb || addr.neighbourhood || addr.village || addr.city_district || "";
                         const city = addr.city || addr.town || addr.county || "";
                         
                         if (localArea && city) {
@@ -119,7 +122,7 @@ const LocationSelector = ({ setPosition, locationName, setLocationName }) => {
                         } else if (city) {
                             setLocationName(`${city}, ${addr.state || ''}`);
                         } else if (data.display_name) {
-                            // Extract just the first 2 parts of display name to avoid huge strings
+                            // Use display_name as a fallback, but check if there's a more specific English name
                             const parts = data.display_name.split(',').slice(0, 2).join(', ');
                             setLocationName(parts);
                         } else {
