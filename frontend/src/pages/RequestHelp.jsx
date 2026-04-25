@@ -22,9 +22,44 @@ const RequestHelp = ({ username }) => {
 
         setIsLocating(true)
         navigator.geolocation.getCurrentPosition(
-            (position) => {
-                setLat(position.coords.latitude)
-                setLng(position.coords.longitude)
+            async (position) => {
+                const latitude = position.coords.latitude;
+                const longitude = position.coords.longitude;
+                setLat(latitude)
+                setLng(longitude)
+
+                try {
+                    // Reverse geocoding using OpenStreetMap Nominatim
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=en&namedetails=1`);
+                    if (!res.ok) throw new Error('Reverse geocoding failed');
+                    const data = await res.json();
+                    
+                    // Helper to force Latin/ASCII only (strips Hindi)
+                    const toLatin = (text) => (text || "").replace(/[^\x20-\x7E]/g, "").trim();
+
+                    if (data && data.display_name) {
+                        // Aggressively skip the first part (street/suburb) and filter for Latin only
+                        const parts = data.display_name.split(',');
+                        const cleanedParts = parts.slice(1) // Skip the first part (street/suburb)
+                            .map(p => toLatin(p))
+                            .filter(p => p.length > 2);
+
+                        if (cleanedParts.length > 0) {
+                            setAddress(cleanedParts.slice(0, 3).join(', '));
+                        } else {
+                            // Fallback to city/state
+                            const city = toLatin(data.address?.city || data.address?.town || data.address?.county);
+                            const state = toLatin(data.address?.state);
+                            setAddress(city ? (state ? `${city}, ${state}` : city) : "Current Location (Verified)");
+                        }
+                    } else {
+                        setAddress("Current Location (Verified)");
+                    }
+                } catch (err) {
+                    console.error("Geocoding failed:", err);
+                    setAddress("Current Location (Verified)");
+                }
+
                 setMessage('Location captured successfully. Emergency responders will be able to see your precise coordinates.')
                 setStatus('success')
                 setIsLocating(false)
