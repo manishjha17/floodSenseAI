@@ -17,7 +17,7 @@ const AssessmentForm = ({ username, userRole, onLogout }) => {
 
     const handleFeedback = async (status) => {
         if (!result) return
-        
+
         // Block guests from submitting feedback to the DB
         if (userRole === 'guest') {
             setShowLoginPrompt(true)
@@ -76,7 +76,7 @@ const AssessmentForm = ({ username, userRole, onLogout }) => {
                 const lon = position.coords.longitude;
                 setCoordinates({ lat, lon });
                 setSearchError("");
-                
+
                 // Show loading state in address field
                 setAddress("Locating...");
 
@@ -90,20 +90,20 @@ const AssessmentForm = ({ username, userRole, onLogout }) => {
                     const toLatin = (text) => (text || "").replace(/[^\x20-\x7E]/g, "").trim();
 
                     if (data && data.display_name) {
-                        const englishName = data.namedetails?.['name:en'];
-                        
-                        if (englishName) {
-                            const addressParts = data.display_name.split(',');
-                            addressParts[0] = englishName;
-                            setAddress(toLatin(addressParts.slice(0, 3).join(', ')));
-                        } else {
-                            // Filter out everything except Latin characters
-                            const cleanedParts = data.display_name.split(',')
-                                .map(p => toLatin(p))
-                                .filter(p => p.length > 1); // Skip empty or single-char artifacts
+                        // Aggressively skip the first part (street/suburb) and filter for Latin only
+                        const parts = data.display_name.split(',');
+                        const cleanedParts = parts.slice(1) // Remove the first part
+                            .map(p => toLatin(p))
+                            .filter(p => p.length > 2);
 
-                            if (cleanedParts.length > 0) {
-                                setAddress(cleanedParts.slice(0, 3).join(', '));
+                        if (cleanedParts.length > 0) {
+                            setAddress(cleanedParts.slice(0, 3).join(', '));
+                        } else {
+                            // Fallback to city/state directly from address object
+                            const city = toLatin(data.address?.city || data.address?.town || data.address?.county);
+                            const state = toLatin(data.address?.state);
+                            if (city) {
+                                setAddress(state ? `${city}, ${state}` : city);
                             } else {
                                 setAddress("Current Location (Verified)");
                             }
@@ -497,7 +497,7 @@ const AssessmentForm = ({ username, userRole, onLogout }) => {
                         <div className="space-y-1.5">
                             <h2 className="text-xl font-bold text-white">Sign In Required</h2>
                             <p className="text-sm text-gray-400 leading-relaxed">
-                                Generating reports and submitting AI feedback is reserved for registered users. <br/> Please sign in to get full access!
+                                Generating reports and submitting AI feedback is reserved for registered users. <br /> Please sign in to get full access!
                             </p>
                         </div>
                         <div className="w-full space-y-3 pt-1">

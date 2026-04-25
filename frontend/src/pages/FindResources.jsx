@@ -99,39 +99,39 @@ const LocationSelector = ({ setPosition, locationName, setLocationName }) => {
                 setPosition([lat, lon]);
                 setSearchQuery("");
                 setSearchError("");
-                
+
                 // Show loading state briefly
                 setLocationName("Locating...");
-                
+
                 try {
                     // Reverse geocoding using OpenStreetMap Nominatim with namedetails for English fallback
                     const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=en&namedetails=1`);
                     if (!res.ok) throw new Error('Reverse geocoding failed');
                     const data = await res.json();
-                    
+
                     // Helper to force Latin/ASCII only (strips Hindi and other scripts)
                     const toLatin = (text) => (text || "").replace(/[^\x20-\x7E]/g, "").trim();
-                    
+
                     if (data && data.address) {
                         const addr = data.address;
-                        const details = data.namedetails || {};
                         
-                        // Strip non-Latin characters from all components
-                        let localArea = toLatin(details['name:en'] || addr.suburb || addr.neighbourhood || addr.village || addr.city_district);
-                        let city = toLatin(addr.city || addr.town || addr.county);
-                        let state = toLatin(addr.state);
+                        // Aggressively skip the first part (suburb/street) as it often lacks English translations
+                        let city = toLatin(addr.city || addr.town || addr.county || addr.city_district);
+                        let state = toLatin(addr.state || addr.region);
                         
-                        if (localArea && city) {
-                            setLocationName(`${localArea}, ${city}`);
-                        } else if (city && state) {
+                        if (city && state) {
                             setLocationName(`${city}, ${state}`);
                         } else if (city) {
                             setLocationName(city);
                         } else {
-                            // Last resort: Clean up display_name
-                            const cleanDisplay = toLatin(data.display_name);
-                            if (cleanDisplay && cleanDisplay.length > 5) {
-                                setLocationName(cleanDisplay.split(',').slice(0, 2).join(', '));
+                            // Fallback to display_name but skip the first segment
+                            const parts = (data.display_name || "").split(',');
+                            const cleanParts = parts.slice(1) // Skip the first part (street/suburb)
+                                .map(p => toLatin(p))
+                                .filter(p => p.length > 2);
+                            
+                            if (cleanParts.length > 0) {
+                                setLocationName(cleanParts.slice(0, 2).join(', '));
                             } else {
                                 setLocationName("Current Location (Verified)");
                             }
@@ -139,7 +139,7 @@ const LocationSelector = ({ setPosition, locationName, setLocationName }) => {
                     } else {
                         setLocationName("Current Location (Verified)");
                     }
-                } catch(err) {
+                } catch (err) {
                     setLocationName("Your Current Location");
                 }
             }, () => {
@@ -223,59 +223,59 @@ const FindResources = () => {
             ];
 
             try {
-            const mirrors = [
-                'https://overpass-api.de/api/interpreter',
-                'https://overpass.kumi.systems/api/interpreter',
-                'https://lz4.overpass-api.de/api/interpreter',
-                'https://z.overpass-api.de/api/interpreter'
-            ];
+                const mirrors = [
+                    'https://overpass-api.de/api/interpreter',
+                    'https://overpass.kumi.systems/api/interpreter',
+                    'https://lz4.overpass-api.de/api/interpreter',
+                    'https://z.overpass-api.de/api/interpreter'
+                ];
 
-            let data = null;
-            let success = false;
+                let data = null;
+                let success = false;
 
-            for (const mirror of mirrors) {
-                try {
-                    const query = `[out:json][timeout:30];(node["amenity"~"hospital|clinic|police|fire_station|shelter|social_facility|restaurant|drinking_water"](around:10000,${lat},${lon});node["shop"~"supermarket|convenience"](around:10000,${lat},${lon}););out body 60;`;
-                    
-                    const res = await fetch(mirror, {
-                        method: 'POST',
-                        body: `data=${encodeURIComponent(query)}`,
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-                    });
-                    
-                    if (res.ok) {
-                        data = await res.json();
-                        if (data && data.elements && data.elements.length > 0) {
-                            success = true;
-                            break;
+                for (const mirror of mirrors) {
+                    try {
+                        const query = `[out:json][timeout:30];(node["amenity"~"hospital|clinic|police|fire_station|shelter|social_facility|restaurant|drinking_water"](around:10000,${lat},${lon});node["shop"~"supermarket|convenience"](around:10000,${lat},${lon}););out body 60;`;
+
+                        const res = await fetch(mirror, {
+                            method: 'POST',
+                            body: `data=${encodeURIComponent(query)}`,
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+                        });
+
+                        if (res.ok) {
+                            data = await res.json();
+                            if (data && data.elements && data.elements.length > 0) {
+                                success = true;
+                                break;
+                            }
                         }
+                    } catch (err) {
+                        console.warn(`Mirror ${mirror} failed, trying next...`);
                     }
-                } catch (err) {
-                    console.warn(`Mirror ${mirror} failed, trying next...`);
                 }
-            }
 
-            if (!success) {
-                setResources(generateMockFallback());
-                return;
-            }
+                if (!success) {
+                    setResources(generateMockFallback());
+                    return;
+                }
 
-            const elements = data.elements || [];
-            
-            // Map OSM tags to our UI categories
-            const realResources = elements.map(node => {
+                const elements = data.elements || [];
+
+                // Map OSM tags to our UI categories
+                const realResources = elements.map(node => {
                     let type = 'Resource';
                     const tags = node.tags || {};
                     const amenity = tags.amenity || '';
                     const shop = tags.shop || '';
-                    
+
                     if (amenity.includes('hospital') || amenity.includes('clinic')) type = 'Hospital / Medical Center';
                     else if (amenity.includes('police')) type = 'Police Station';
                     else if (amenity.includes('fire_station')) type = 'Fire Station';
                     else if (amenity.includes('shelter') || amenity.includes('social_facility')) type = 'Shelter / Camp';
                     else if (amenity.includes('restaurant') || amenity.includes('fast_food') || shop.includes('supermarket') || shop.includes('convenience')) type = 'Food Center';
                     else if (amenity.includes('drinking_water') || shop.includes('water')) type = 'Clean Water';
-                    
+
                     return {
                         name: tags.name || `${type} (Local)`,
                         type,
@@ -284,7 +284,7 @@ const FindResources = () => {
                         status: 'Operational'
                     };
                 });
-                
+
                 setResources(realResources);
             } catch (error) {
                 console.error("Failed Overpass API, using mock fallback:", error);
