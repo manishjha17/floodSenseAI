@@ -44,11 +44,56 @@ const LocationSelector = ({ setPosition, locationName, setLocationName }) => {
 
     const useMyLocation = () => {
         if ("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition((position) => {
-                setPosition([position.coords.latitude, position.coords.longitude]);
-                setLocationName("Your Current Location");
+            navigator.geolocation.getCurrentPosition(async (position) => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                setPosition([lat, lon]);
                 setSearchQuery("");
                 setSearchError("");
+                
+                // Show loading state
+                setLocationName("Locating...");
+
+                try {
+                    // Reverse geocoding using OpenStreetMap Nominatim
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=en&namedetails=1`);
+                    if (!res.ok) throw new Error('Reverse geocoding failed');
+                    const data = await res.json();
+                    
+                    // Helper to force Latin/ASCII only (strips Hindi)
+                    const toLatin = (text) => (text || "").replace(/[^\x20-\x7E]/g, "").trim();
+
+                    if (data && data.address) {
+                        const addr = data.address;
+                        
+                        // Aggressively skip the first part (suburb/street) and focus on City/State
+                        let city = toLatin(addr.city || addr.town || addr.county || addr.city_district);
+                        let state = toLatin(addr.state || addr.region);
+                        
+                        if (city && state) {
+                            setLocationName(`${city}, ${state}`);
+                        } else if (city) {
+                            setLocationName(city);
+                        } else {
+                            // Fallback to display_name but skip the first segment
+                            const parts = (data.display_name || "").split(',');
+                            const cleanParts = parts.slice(1) // Remove first part
+                                .map(p => toLatin(p))
+                                .filter(p => p.length > 2);
+                            
+                            if (cleanParts.length > 0) {
+                                setLocationName(cleanParts.slice(0, 2).join(', '));
+                            } else {
+                                setLocationName("Current Location (Verified)");
+                            }
+                        }
+                    } else {
+                        setLocationName("Current Location (Verified)");
+                    }
+                } catch (err) {
+                    console.error("Geocoding failed:", err);
+                    setLocationName("Current Location (Verified)");
+                }
             }, () => {
                 setSearchError("Permission denied. Please search by city instead.");
             });
