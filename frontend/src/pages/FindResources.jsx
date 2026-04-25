@@ -109,24 +109,34 @@ const LocationSelector = ({ setPosition, locationName, setLocationName }) => {
                     if (!res.ok) throw new Error('Reverse geocoding failed');
                     const data = await res.json();
                     
+                    // Helper to detect Hindi characters
+                    const isHindi = (text) => /[\u0900-\u097F]/.test(text || "");
+                    
                     if (data && data.address) {
                         const addr = data.address;
                         const details = data.namedetails || {};
                         
-                        // Prioritize English names from namedetails if available
-                        const localArea = details['name:en'] || addr.suburb || addr.neighbourhood || addr.village || addr.city_district || "";
-                        const city = addr.city || addr.town || addr.county || "";
+                        // Prioritize English names from namedetails, and filter out Hindi strings
+                        let localArea = details['name:en'] || addr.suburb || addr.neighbourhood || addr.village || addr.city_district || "";
+                        if (isHindi(localArea)) localArea = ""; // Skip if only Hindi name available
+                        
+                        let city = addr.city || addr.town || addr.county || "";
+                        if (isHindi(city)) city = "";
+
+                        let state = addr.state || "";
+                        if (isHindi(state)) state = "";
                         
                         if (localArea && city) {
                             setLocationName(`${localArea}, ${city}`);
+                        } else if (city && state) {
+                            setLocationName(`${city}, ${state}`);
                         } else if (city) {
-                            setLocationName(`${city}, ${addr.state || ''}`);
-                        } else if (data.display_name) {
-                            // Use display_name as a fallback, but check if there's a more specific English name
+                            setLocationName(city);
+                        } else if (data.display_name && !isHindi(data.display_name)) {
                             const parts = data.display_name.split(',').slice(0, 2).join(', ');
                             setLocationName(parts);
                         } else {
-                            setLocationName("Your Current Location");
+                            setLocationName("Current Location (Verified)");
                         }
                     } else {
                         setLocationName("Your Current Location");
