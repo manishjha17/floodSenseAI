@@ -75,8 +75,28 @@ const AssessmentForm = ({ username, userRole, onLogout }) => {
                 const lat = position.coords.latitude;
                 const lon = position.coords.longitude;
                 setCoordinates({ lat, lon });
-                setAddress("Your Current Location");
                 setSearchError("");
+                
+                // Show loading state in address field
+                setAddress("Locating...");
+
+                try {
+                    // Reverse geocoding using OpenStreetMap Nominatim
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+                    if (!res.ok) throw new Error('Reverse geocoding failed');
+                    const data = await res.json();
+                    
+                    if (data && data.display_name) {
+                        // Extract a concise version of the address (first 2-3 parts)
+                        const parts = data.display_name.split(',').slice(0, 3).join(', ');
+                        setAddress(parts);
+                    } else {
+                        setAddress("Your Current Location");
+                    }
+                } catch (err) {
+                    console.error("Reverse geocoding error:", err);
+                    setAddress("Your Current Location");
+                }
             }, () => {
                 setSearchError("Permission denied. Please search instead.");
             });
