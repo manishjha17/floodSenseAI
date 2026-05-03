@@ -19,9 +19,12 @@ const LocationSelector = ({ setPosition, locationName, setLocationName }) => {
         setSearchError('');
 
         try {
-            // Use our secure backend proxy instead of direct external call 
-            // This prevents "Authorization Header" conflicts for logged-in users (Admins)
-            const response = await axios.get(`${import.meta.env.VITE_API_URL}/forecast/search?name=${encodeURIComponent(searchQuery)}`);
+            // Free geocoding using Open-Meteo directly via fetch 
+            // (Using fetch avoids our global Axios interceptor from leaking the Admin JWT token)
+            const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(searchQuery)}&count=1&format=json`);
+            if (!res.ok) throw new Error('Geocoding failed');
+            const data = await res.json();
+            const response = { data };
 
             if (response.data && response.data.results && response.data.results.length > 0) {
                 const { latitude, longitude, name, country } = response.data.results[0];
@@ -50,7 +53,7 @@ const LocationSelector = ({ setPosition, locationName, setLocationName }) => {
                 setPosition([lat, lon]);
                 setSearchQuery("");
                 setSearchError("");
-                
+
                 // Show loading state
                 setLocationName("Locating...");
 
@@ -59,17 +62,17 @@ const LocationSelector = ({ setPosition, locationName, setLocationName }) => {
                     const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=en&namedetails=1`);
                     if (!res.ok) throw new Error('Reverse geocoding failed');
                     const data = await res.json();
-                    
+
                     // Helper to force Latin/ASCII only (strips Hindi)
                     const toLatin = (text) => (text || "").replace(/[^\x20-\x7E]/g, "").trim();
 
                     if (data && data.address) {
                         const addr = data.address;
-                        
+
                         // Aggressively skip the first part (suburb/street) and focus on City/State
                         let city = toLatin(addr.city || addr.town || addr.county || addr.city_district);
                         let state = toLatin(addr.state || addr.region);
-                        
+
                         if (city && state) {
                             setLocationName(`${city}, ${state}`);
                         } else if (city) {
@@ -80,7 +83,7 @@ const LocationSelector = ({ setPosition, locationName, setLocationName }) => {
                             const cleanParts = parts.slice(1) // Remove first part
                                 .map(p => toLatin(p))
                                 .filter(p => p.length > 2);
-                            
+
                             if (cleanParts.length > 0) {
                                 setLocationName(cleanParts.slice(0, 2).join(', '));
                             } else {
