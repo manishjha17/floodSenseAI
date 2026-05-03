@@ -146,36 +146,25 @@ async def get_flood_prediction(request: ForecastRequest):
                     algorithm_used = "Random Forest ML Classifier"
                     logger.info(f"ML Prediction Initial Score: {risk_score}% Risk")
                     
-                    # --- SMART HEURISTIC OVERRIDES ---
-                    override_applied = False
-                    
-                    # Rule 1: Bone dry override. No rain and low river discharge means negligible risk.
-                    if total_rainfall < 10 and max_river_discharge < 300:
-                        risk_score = min(risk_score, 8) 
-                        algorithm_used += " (Dry Weather Override)"
-                        override_applied = True
+                    # --- IMPROVED PRIORITY-BASED HEURISTICS ---
+                    # Priority 1: Critical Thresholds (Instant Severe Risk)
+                    if max_daily_rainfall > 120 or total_rainfall > 180:
+                        risk_score = max(risk_score, 95)
+                        algorithm_used += " (Extreme Rain Override)"
+                    # We removed the absolute 500 m3/s river override because it causes false alarms for large rivers like the Yamuna.
                         
-                    # Rule 2: Extreme river discharge override. Huge volume means imminent flood regardless of ML.
-                    if max_river_discharge > 500:
-                        risk_score = max(risk_score, 90)
-                        algorithm_used += " (Extreme River Discharge Override)"
-                        override_applied = True
-                        
-                    # Rule 3: Extreme Rainfall (Flash Flood). Immediate heavy rain triggers severe risk.
-                    if max_daily_rainfall > 100 or total_rainfall > 150:
-                        risk_score = max(risk_score, 90)
-                        algorithm_used += " (Extreme Rainfall Override)"
-                        override_applied = True
-                        
-                    # Rule 4: High saturation + Incoming rain. Ground can't absorb water, pushing risk higher.
-                    if total_rainfall > 30 and avg_soil_moisture > 0.4:
-                        risk_score = min(int(risk_score * 1.5), 95)
+                    # Priority 2: Aggravating Multipliers
+                    elif total_rainfall > 40 and avg_soil_moisture > 0.45:
+                        risk_score = min(int(risk_score * 1.5), 85)
                         algorithm_used += " (High Saturation Multiplier)"
-                        override_applied = True
                         
-                    if override_applied:
-                        logger.info(f"Final Score after Heuristic Overrides: {risk_score}% Risk")
-                    logger.info(f"ML Prediction Successful: {risk_score}% Risk")
+                    # Priority 3: Mitigating Reducers
+                    elif total_rainfall < 5 and max_river_discharge < 300 and avg_soil_moisture < 0.2:
+                        risk_score = min(risk_score, 10)
+                        algorithm_used += " (Verified Dry Override)"
+
+                    risk_score = max(5, min(risk_score, 99)) # Enforce boundaries
+                    logger.info(f"Final Score after Rules Engine: {risk_score}% Risk")
                     
                 except Exception as ml_err:
                     logger.error(f"ML Model inference failed: {ml_err}. Falling back to default risk.")
@@ -183,18 +172,18 @@ async def get_flood_prediction(request: ForecastRequest):
             # Map Risk Score to Category & Append Dynamic Warnings
             if risk_score >= 80:
                 risk_category = "Severe"
-                warning_messages.append(f"CRITICAL: Machine Learning model predicts an {risk_score}% probability of severe flooding based on historical pattern data.")
+                warning_messages.append(f"CRITICAL: System predicts a {risk_score}% probability of severe flooding based on current conditions and historical patterns.")
                 if elevation < 15:
                     warning_messages.append(f"AGGRAVATING FACTOR: Low elevation ({elevation}m a.s.l) compounds structural flood vulnerability.")
             elif risk_score >= 50:
                 risk_category = "High"
-                warning_messages.append(f"WARNING: High probability ({risk_score}%) of flooding detected by AI model. Prepare mitigation protocols.")
+                warning_messages.append(f"WARNING: High probability ({risk_score}%) of flooding detected. Prepare mitigation protocols.")
             elif risk_score >= 25:
                 risk_category = "Moderate"
                 warning_messages.append(f"ADVISORY: Moderate chance ({risk_score}%) of localized pooling or minor road disruption.")
             else:
                 risk_category = "Low"
-                warning_messages.append(f"INFO: AI Predicts low flood probability ({risk_score}%). Environmental conditions appear normal.")
+                warning_messages.append(f"INFO: System predicts low flood probability ({risk_score}%). Environmental conditions appear normal.")
 
             # Create the response payload
             chart_data = []
