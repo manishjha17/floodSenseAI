@@ -194,21 +194,21 @@ const FloodPrediction = () => {
                 return {
                     bg: 'bg-gradient-to-br from-emerald-500/10 to-emerald-900/5', border: 'border-emerald-500/20', line: 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]',
                     text: 'text-emerald-400', icon: <ShieldCheck size={22} />, iconBg: 'bg-emerald-500/20 text-emerald-400',
-                    title: 'Automated Status Update', itemText: 'text-emerald-100', dot: 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]',
+                    title: 'System Status: Nominal', itemText: 'text-emerald-100', dot: 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]',
                     glow: 'shadow-[0_0_30px_rgba(16,185,129,0.05)]'
                 };
             case 'Moderate':
                 return {
                     bg: 'bg-gradient-to-br from-yellow-500/10 to-yellow-900/5', border: 'border-yellow-500/20', line: 'bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]',
                     text: 'text-yellow-400', icon: <AlertTriangle size={22} />, iconBg: 'bg-yellow-500/20 text-yellow-400',
-                    title: 'Automated WMO Advisories', itemText: 'text-yellow-100', dot: 'bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.8)]',
+                    title: 'FloodSenseAI Advisory', itemText: 'text-yellow-100', dot: 'bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.8)]',
                     glow: 'shadow-[0_0_30px_rgba(234,179,8,0.05)]'
                 };
             case 'High':
                 return {
                     bg: 'bg-gradient-to-br from-orange-500/15 to-orange-900/10', border: 'border-orange-500/30', line: 'bg-orange-500 shadow-[0_0_12px_rgba(249,115,22,0.8)]',
                     text: 'text-orange-400', icon: <AlertTriangle size={22} />, iconBg: 'bg-orange-500/20 text-orange-400',
-                    title: 'Automated WMO Alerts', itemText: 'text-orange-50', dot: 'bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.8)]',
+                    title: 'FloodSenseAI Alert', itemText: 'text-orange-50', dot: 'bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.8)]',
                     glow: 'shadow-[0_0_40px_rgba(249,115,22,0.1)]'
                 };
             case 'Severe':
@@ -216,7 +216,7 @@ const FloodPrediction = () => {
                 return {
                     bg: 'bg-gradient-to-br from-rose-500/20 to-rose-900/10', border: 'border-rose-500/40', line: 'bg-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.9)]',
                     text: 'text-rose-400', icon: <ShieldAlert size={22} />, iconBg: 'bg-rose-500/20 text-rose-400',
-                    title: 'Automated WMO Warnings Triggered', itemText: 'text-rose-50', dot: 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.9)]',
+                    title: 'FloodSenseAI Critical Warning', itemText: 'text-rose-50', dot: 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.9)]',
                     glow: 'shadow-[0_0_50px_rgba(244,63,94,0.15)]'
                 };
         }
