@@ -137,9 +137,9 @@ const LocationSelector = ({ setPosition, locationName, setLocationName }) => {
             {searchError && <p className="text-rose-400 text-sm mb-3 relative z-10 animate-in fade-in">{searchError}</p>}
 
             <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/5 relative z-10">
-                <span className="text-blue-300 font-medium text-sm flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-blue-400 shadow-[0_0_5px_rgba(96,165,250,0.8)]"></div>
-                    {locationName}
+                <span className={`${locationName ? 'text-blue-300' : 'text-gray-500'} font-medium text-sm flex items-center gap-2`}>
+                    <div className={`w-1.5 h-1.5 rounded-full ${locationName ? 'bg-blue-400 shadow-[0_0_5px_rgba(96,165,250,0.8)]' : 'bg-gray-600'}`}></div>
+                    {locationName || "No location selected"}
                 </span>
                 <button
                     type="button"
@@ -155,8 +155,8 @@ const LocationSelector = ({ setPosition, locationName, setLocationName }) => {
 };
 
 const FloodPrediction = () => {
-    const [position, setPosition] = useState([28.6139, 77.2090]); // Default to Delhi
-    const [locationName, setLocationName] = useState('Delhi');
+    const [position, setPosition] = useState(null); // No default location
+    const [locationName, setLocationName] = useState('');
     const [loading, setLoading] = useState(false);
     const [predictionData, setPredictionData] = useState(null);
     const [error, setError] = useState(null);
@@ -245,8 +245,8 @@ const FloodPrediction = () => {
 
                     <button
                         onClick={fetchPrediction}
-                        disabled={loading}
-                        className={`mt-4 w-full py-3.5 px-4 rounded-xl text-white font-bold transition-all shadow-md flex items-center justify-center gap-2 relative overflow-hidden group ${loading ? 'bg-blue-500/50 cursor-not-allowed' : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)] transform hover:-translate-y-0.5 border border-blue-500/50'
+                        disabled={loading || !position}
+                        className={`mt-4 w-full py-3.5 px-4 rounded-xl text-white font-bold transition-all shadow-md flex items-center justify-center gap-2 relative overflow-hidden group ${loading || !position ? 'bg-blue-500/50 cursor-not-allowed opacity-50' : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)] transform hover:-translate-y-0.5 border border-blue-500/50'
                             }`}
                     >
                         {loading && <div className="absolute inset-0 bg-white/20 animate-pulse"></div>}
