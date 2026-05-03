@@ -192,28 +192,32 @@ const FloodPrediction = () => {
         switch (category) {
             case 'Low':
                 return {
-                    bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', line: 'bg-emerald-500',
-                    text: 'text-emerald-400', icon: <ShieldCheck size={18} className="mr-2" />,
-                    title: 'Automated Status Update:', itemText: 'text-emerald-200/90', dot: 'bg-emerald-500'
+                    bg: 'bg-gradient-to-br from-emerald-500/10 to-emerald-900/5', border: 'border-emerald-500/20', line: 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]',
+                    text: 'text-emerald-400', icon: <ShieldCheck size={22} />, iconBg: 'bg-emerald-500/20 text-emerald-400',
+                    title: 'Automated Status Update', itemText: 'text-emerald-100', dot: 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]',
+                    glow: 'shadow-[0_0_30px_rgba(16,185,129,0.05)]'
                 };
             case 'Moderate':
                 return {
-                    bg: 'bg-yellow-500/10', border: 'border-yellow-500/20', line: 'bg-yellow-500',
-                    text: 'text-yellow-400', icon: <AlertTriangle size={18} className="mr-2" />,
-                    title: 'Automated WMO Advisories:', itemText: 'text-yellow-200/90', dot: 'bg-yellow-500'
+                    bg: 'bg-gradient-to-br from-yellow-500/10 to-yellow-900/5', border: 'border-yellow-500/20', line: 'bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]',
+                    text: 'text-yellow-400', icon: <AlertTriangle size={22} />, iconBg: 'bg-yellow-500/20 text-yellow-400',
+                    title: 'Automated WMO Advisories', itemText: 'text-yellow-100', dot: 'bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.8)]',
+                    glow: 'shadow-[0_0_30px_rgba(234,179,8,0.05)]'
                 };
             case 'High':
                 return {
-                    bg: 'bg-orange-500/10', border: 'border-orange-500/20', line: 'bg-orange-500',
-                    text: 'text-orange-400', icon: <AlertTriangle size={18} className="mr-2" />,
-                    title: 'Automated WMO Alerts:', itemText: 'text-orange-200/90', dot: 'bg-orange-500'
+                    bg: 'bg-gradient-to-br from-orange-500/15 to-orange-900/10', border: 'border-orange-500/30', line: 'bg-orange-500 shadow-[0_0_12px_rgba(249,115,22,0.8)]',
+                    text: 'text-orange-400', icon: <AlertTriangle size={22} />, iconBg: 'bg-orange-500/20 text-orange-400',
+                    title: 'Automated WMO Alerts', itemText: 'text-orange-50', dot: 'bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.8)]',
+                    glow: 'shadow-[0_0_40px_rgba(249,115,22,0.1)]'
                 };
             case 'Severe':
             default:
                 return {
-                    bg: 'bg-rose-500/10', border: 'border-rose-500/20', line: 'bg-rose-500',
-                    text: 'text-rose-400', icon: <ShieldAlert size={18} className="mr-2" />,
-                    title: 'Automated WMO Warnings Triggered:', itemText: 'text-rose-200/90', dot: 'bg-rose-500'
+                    bg: 'bg-gradient-to-br from-rose-500/20 to-rose-900/10', border: 'border-rose-500/40', line: 'bg-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.9)]',
+                    text: 'text-rose-400', icon: <ShieldAlert size={22} />, iconBg: 'bg-rose-500/20 text-rose-400',
+                    title: 'Automated WMO Warnings Triggered', itemText: 'text-rose-50', dot: 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.9)]',
+                    glow: 'shadow-[0_0_50px_rgba(244,63,94,0.15)]'
                 };
         }
     };
@@ -296,20 +300,32 @@ const FloodPrediction = () => {
                         (() => {
                             const style = getNotificationStyle(predictionData.risk_category);
                             return (
-                                <div className={`${style.bg} border ${style.border} p-5 rounded-2xl relative overflow-hidden`}>
-                                    <div className={`absolute top-0 left-0 w-1 h-full ${style.line}`}></div>
-                                    <h4 className={`font-bold ${style.text} flex items-center mb-3`}>
+                                <div className={`${style.bg} ${style.glow} border ${style.border} p-6 rounded-2xl relative overflow-hidden backdrop-blur-md transition-all duration-500 flex gap-5 items-start`}>
+                                    {/* Glowing side border */}
+                                    <div className={`absolute top-0 left-0 w-1.5 h-full ${style.line}`}></div>
+                                    
+                                    {/* Icon Container */}
+                                    <div className={`p-3 rounded-xl ${style.iconBg} shrink-0 flex items-center justify-center border border-white/5 shadow-lg`}>
                                         {style.icon}
-                                        {style.title}
-                                    </h4>
-                                    <ul className="list-none space-y-2">
-                                        {predictionData.warnings.map((warn, i) => (
-                                            <li key={i} className={`${style.itemText} text-sm flex items-start gap-2`}>
-                                                <div className={`w-1.5 h-1.5 rounded-full ${style.dot} mt-1.5 flex-shrink-0`}></div>
-                                                {warn}
-                                            </li>
-                                        ))}
-                                    </ul>
+                                    </div>
+                                    
+                                    {/* Content */}
+                                    <div className="flex-1 pt-1 z-10">
+                                        <h4 className={`font-bold tracking-wider uppercase text-xs mb-3 ${style.text} opacity-90`}>
+                                            {style.title}
+                                        </h4>
+                                        <ul className="list-none space-y-3">
+                                            {predictionData.warnings.map((warn, i) => (
+                                                <li key={i} className={`${style.itemText} text-sm flex items-start gap-3 leading-relaxed`}>
+                                                    <div className={`w-1.5 h-1.5 rounded-full ${style.dot} mt-2 flex-shrink-0`}></div>
+                                                    <span className="opacity-95">{warn}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                    
+                                    {/* Ambient glow effect in background */}
+                                    <div className={`absolute -right-20 -top-20 w-64 h-64 ${style.line.split(' ')[0]} opacity-10 blur-[80px] pointer-events-none rounded-full`}></div>
                                 </div>
                             );
                         })()
