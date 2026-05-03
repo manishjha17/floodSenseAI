@@ -159,7 +159,7 @@ async def get_flood_prediction(request: ForecastRequest):
                         algorithm_used += " (High Saturation Multiplier)"
                         
                     # Priority 3: Mitigating Reducers
-                    elif total_rainfall < 5 and max_river_discharge < 300 and avg_soil_moisture < 0.2:
+                    elif total_rainfall < 15 and max_river_discharge < 300:
                         risk_score = min(risk_score, 10)
                         algorithm_used += " (Verified Dry Override)"
 
