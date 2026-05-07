@@ -20,11 +20,11 @@ try:
     if os.path.exists(ML_MODEL_PATH) and os.path.exists(ML_FEATURES_PATH):
         ml_model = joblib.load(ML_MODEL_PATH)
         ml_features = joblib.load(ML_FEATURES_PATH)
-        logger.info("✅ Successfully loaded Random Forest model and features.")
+        logger.info("Successfully loaded Random Forest model and features.")
     else:
-        logger.warning(f"⚠️ ML Model files not found. Will fallback to heuristics if needed.")
+        logger.warning(f"ML Model files not found. Will fallback to heuristics if needed.")
 except Exception as e:
-    logger.error(f"❌ Error loading ML model: {e}")
+    logger.error(f"Error loading ML model: {e}")
 
 class ForecastRequest(BaseModel):
     latitude: float

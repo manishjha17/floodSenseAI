@@ -880,7 +880,7 @@ const Login = ({ onLogin }) => {
                                                 { label: "Special character", met: /[#.\-?!@$%^&*]/.test(password) },
                                             ];
                                             const allMet = rules.every(r => r.met);
-                                            
+
                                             // Only show if not all met, or if we haven't finished typing (not blurred)
                                             if (allMet && passwordBlurred) return null;
 
