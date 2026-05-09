@@ -33,8 +33,7 @@ exports.getForecast = async (req, res) => {
         const HF_TOKEN = process.env.HF_TOKEN;
 
         const pythonResponse = await axios.post(`${PYTHON_SERVICE_URL}/forecast/`, {
-            latitude,
-            longitude
+            ...req.body
         }, {
             headers: {
                 ...(HF_TOKEN ? { 'Authorization': `Bearer ${HF_TOKEN}` } : {})

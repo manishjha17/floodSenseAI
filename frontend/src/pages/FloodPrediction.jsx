@@ -165,9 +165,25 @@ const FloodPrediction = () => {
         setLoading(true);
         setError(null);
         try {
+            const lat = position[0];
+            const lon = position[1];
+            
+            // 1. Fetch Open-Meteo Data directly from frontend to bypass Hugging Face IP rate limits
+            const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=precipitation_sum&hourly=soil_moisture_3_to_9cm&timezone=auto`);
+            const floodRes = await fetch(`https://flood-api.open-meteo.com/v1/flood?latitude=${lat}&longitude=${lon}&daily=river_discharge&timezone=auto`);
+            const elevationRes = await fetch(`https://api.open-meteo.com/v1/elevation?latitude=${lat}&longitude=${lon}`);
+            
+            const weather_data = await weatherRes.ok ? await weatherRes.json() : {};
+            const flood_data = await floodRes.ok ? await floodRes.json() : {};
+            const elevation_data = await elevationRes.ok ? await elevationRes.json() : {};
+
+            // 2. Send pre-fetched data to ML model
             const response = await axios.post(`${import.meta.env.VITE_API_URL}/forecast/`, {
-                latitude: position[0],
-                longitude: position[1]
+                latitude: lat,
+                longitude: lon,
+                weather_data,
+                flood_data,
+                elevation_data
             });
             setPredictionData(response.data);
         } catch (err) {

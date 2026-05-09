@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
+from typing import Optional, Dict
 import httpx
 import logging
 import joblib
@@ -29,6 +30,9 @@ except Exception as e:
 class ForecastRequest(BaseModel):
     latitude: float
     longitude: float
+    weather_data: Optional[Dict] = None
+    flood_data: Optional[Dict] = None
+    elevation_data: Optional[Dict] = None
 
 import asyncio
 
@@ -69,24 +73,30 @@ async def get_flood_prediction(request: ForecastRequest):
     }
 
     try:
-        async with httpx.AsyncClient() as client:
-            # Fetch all three APIs concurrently for high performance
-            weather_task = client.get(weather_url, params=weather_params)
-            flood_task = client.get(flood_url, params=flood_params)
-            elevation_task = client.get(elevation_url, params=elevation_params)
-            
-            responses = await asyncio.gather(weather_task, flood_task, elevation_task, return_exceptions=True)
-            
-            # Error checking for individual APIs
-            for resp in responses:
-                if isinstance(resp, Exception):
-                    logger.error(f"Error fetching from external API: {resp}")
-                    continue
-                resp.raise_for_status()
+        if request.weather_data and request.flood_data and request.elevation_data:
+            logger.info("Using pre-fetched Open-Meteo data from frontend")
+            weather_data = request.weather_data
+            flood_data = request.flood_data
+            elevation_data = request.elevation_data
+        else:
+            async with httpx.AsyncClient() as client:
+                # Fetch all three APIs concurrently for high performance
+                weather_task = client.get(weather_url, params=weather_params)
+                flood_task = client.get(flood_url, params=flood_params)
+                elevation_task = client.get(elevation_url, params=elevation_params)
                 
-            weather_data = responses[0].json() if not isinstance(responses[0], Exception) else {}
-            flood_data = responses[1].json() if not isinstance(responses[1], Exception) else {}
-            elevation_data = responses[2].json() if not isinstance(responses[2], Exception) else {}
+                responses = await asyncio.gather(weather_task, flood_task, elevation_task, return_exceptions=True)
+                
+                # Error checking for individual APIs
+                for resp in responses:
+                    if isinstance(resp, Exception):
+                        logger.error(f"Error fetching from external API: {resp}")
+                        continue
+                    resp.raise_for_status()
+                    
+                weather_data = responses[0].json() if not isinstance(responses[0], Exception) else {}
+                flood_data = responses[1].json() if not isinstance(responses[1], Exception) else {}
+                elevation_data = responses[2].json() if not isinstance(responses[2], Exception) else {}
             
             # --- Extract Data ---
             w_daily = weather_data.get("daily", {})
