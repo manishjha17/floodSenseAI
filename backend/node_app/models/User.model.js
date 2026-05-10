@@ -61,6 +61,18 @@ class User {
             [username]
         );
     }
+
+    static async saveOTP(username, otp, expiry) {
+        return await db.run("UPDATE users SET reset_otp = ?, reset_otp_expiry = ? WHERE username = ?", [otp, expiry, username]);
+    }
+
+    static async verifyOTP(username, otp) {
+        return await db.get("SELECT id, reset_otp, reset_otp_expiry FROM users WHERE username = ? AND reset_otp = ?", [username, otp]);
+    }
+
+    static async clearOTP(userId) {
+        return await db.run("UPDATE users SET reset_otp = NULL, reset_otp_expiry = NULL WHERE id = ?", [userId]);
+    }
 }
 
 module.exports = User;

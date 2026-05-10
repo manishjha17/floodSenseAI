@@ -38,7 +38,9 @@ async function initDb() {
             id_proof_url TEXT,
             status TEXT DEFAULT 'active',
             security_question TEXT,
-            security_answer TEXT
+            security_answer TEXT,
+            reset_otp TEXT,
+            reset_otp_expiry TIMESTAMP
         )`);
 
         try { await db.run(`ALTER TABLE users ADD COLUMN id_proof_url TEXT`); } catch (e) {}
@@ -55,7 +57,9 @@ async function initDb() {
             "id_proof_url TEXT",
             "status TEXT DEFAULT 'active'",
             "security_question TEXT",
-            "security_answer TEXT"
+            "security_answer TEXT",
+            "reset_otp TEXT",
+            "reset_otp_expiry TIMESTAMP"
         ];
 
         for (const col of userCols) {
