@@ -3,7 +3,6 @@ const { hashPassword, comparePassword } = require('../utils/Hash.util');
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require('../middlewares/Auth.middleware');
 const cloudinary = require('../config/Cloudinary.config');
-const nodemailer = require('nodemailer');
 
 exports.login = async (req, res) => {
     try {
@@ -178,76 +177,6 @@ exports.getProfile = async (req, res) => {
         res.json(user);
     } catch (err) {
         console.error("Profile fetch error:", err);
-        res.status(500).json({ detail: "Internal Server Error" });
-    }
-};
-
-exports.forgotPasswordOtp = async (req, res) => {
-    try {
-        const { username } = req.body;
-        if (!username) return res.status(400).json({ detail: "Username required" });
-
-        const user = await User.findByUsername(username);
-        if (!user) return res.status(404).json({ detail: "User not found" });
-
-        if (!user.email) {
-            return res.status(400).json({ detail: "No email associated with this account." });
-        }
-
-        const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6 digit OTP
-        const expiry = new Date(Date.now() + 10 * 60000).toISOString();
-
-        await User.saveOTP(username, otp, expiry);
-
-        const transporter = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 587,
-            secure: false, // upgrade later with STARTTLS
-            auth: {
-                user: process.env.GMAIL_USER,
-                pass: process.env.GMAIL_APP_PASSWORD
-            }
-        });
-
-        const mailOptions = {
-            from: process.env.GMAIL_USER,
-            to: user.email,
-            subject: 'FloodSense AI - Password Reset OTP',
-            text: `Your password reset OTP is: ${otp}. It is valid for 10 minutes.`
-        };
-
-        await transporter.sendMail(mailOptions);
-
-        res.json({ message: "OTP sent successfully to your email." });
-    } catch (err) {
-        console.error("OTP generation error:", err);
-        res.status(500).json({ detail: "Internal Server Error while sending OTP" });
-    }
-};
-
-exports.resetPasswordOtp = async (req, res) => {
-    try {
-        const { username, otp, newPassword } = req.body;
-        if (!username || !otp || !newPassword) {
-            return res.status(400).json({ detail: "Missing required fields" });
-        }
-
-        const user = await User.verifyOTP(username, otp);
-        if (!user) {
-            return res.status(401).json({ detail: "Invalid OTP" });
-        }
-
-        const expiryDate = new Date(user.reset_otp_expiry);
-        if (expiryDate < new Date()) {
-            return res.status(401).json({ detail: "OTP has expired" });
-        }
-
-        await User.updatePassword(user.id, await hashPassword(newPassword));
-        await User.clearOTP(user.id);
-
-        res.json({ message: "Password reset successfully. You can now log in." });
-    } catch (err) {
-        console.error("Reset password OTP error:", err);
         res.status(500).json({ detail: "Internal Server Error" });
     }
 };

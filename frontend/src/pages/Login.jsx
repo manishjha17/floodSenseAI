@@ -38,8 +38,7 @@ const Login = ({ onLogin }) => {
 
     // Auth Modal State
     const [showLoginModal, setShowLoginModal] = useState(false)
-    const [authMode, setAuthMode] = useState('login') // 'login', 'register', 'forgot-password', 'reset-password', 'verify-otp'
-    const [resetMethod, setResetMethod] = useState('question') // 'question', 'email'
+    const [authMode, setAuthMode] = useState('login') // 'login', 'register', 'forgot-password', 'reset-password'
 
     // Form State
     const [username, setUsername] = useState('')
@@ -49,7 +48,6 @@ const Login = ({ onLogin }) => {
     const [showNewPassword, setShowNewPassword] = useState(false)
     const [selectedRole, setSelectedRole] = useState('citizen')
     const [passwordBlurred, setPasswordBlurred] = useState(false)
-    const [otp, setOtp] = useState('')
 
     // Registration extra fields
     const [fullName, setFullName] = useState('')
@@ -148,7 +146,6 @@ const Login = ({ onLogin }) => {
         setIdProofName('')
         setSecurityQuestion('What was your first pet\'s name?')
         setSecurityAnswer('')
-        setOtp('')
         setError('')
         setSuccessMsg('')
     }
@@ -279,50 +276,26 @@ const Login = ({ onLogin }) => {
                 }
             }
         } else if (authMode === 'forgot-password') {
-            if (resetMethod === 'question') {
-                try {
-                    const response = await axios.post(`${import.meta.env.VITE_API_URL}/auth/forgot-password-question`, {
-                        username
-                    })
-                    setSecurityQuestion(response.data.question)
-                    setIsLoading(false)
-                    setSuccessMsg('User found. Please answer your security question.')
-                    setTimeout(() => {
-                        setSuccessMsg('')
-                        setAuthMode('reset-password')
-                    }, 1500)
-                } catch (err) {
-                    setIsLoading(false)
-                    if (err.response && err.response.status === 404) {
-                        setError('User not found.')
-                    } else if (err.response && err.response.status === 400) {
-                        setError(err.response.data.detail)
-                    } else {
-                        console.error(err)
-                        setError('Failed to retrieve security question.')
-                    }
-                }
-            } else if (resetMethod === 'email') {
-                try {
-                    const response = await axios.post(`${import.meta.env.VITE_API_URL}/auth/forgot-password-otp`, {
-                        username
-                    })
-                    setIsLoading(false)
-                    setSuccessMsg(response.data.message)
-                    setTimeout(() => {
-                        setSuccessMsg('')
-                        setAuthMode('verify-otp')
-                    }, 1500)
-                } catch (err) {
-                    setIsLoading(false)
-                    if (err.response && err.response.status === 404) {
-                        setError('User not found.')
-                    } else if (err.response && err.response.status === 400) {
-                        setError(err.response.data.detail)
-                    } else {
-                        console.error(err)
-                        setError('Failed to send OTP.')
-                    }
+            try {
+                const response = await axios.post(`${import.meta.env.VITE_API_URL}/auth/forgot-password-question`, {
+                    username
+                })
+                setSecurityQuestion(response.data.question)
+                setIsLoading(false)
+                setSuccessMsg('User found. Please answer your security question.')
+                setTimeout(() => {
+                    setSuccessMsg('')
+                    setAuthMode('reset-password')
+                }, 1500)
+            } catch (err) {
+                setIsLoading(false)
+                if (err.response && err.response.status === 404) {
+                    setError('User not found.')
+                } else if (err.response && err.response.status === 400) {
+                    setError(err.response.data.detail)
+                } else {
+                    console.error(err)
+                    setError('Failed to retrieve security question.')
                 }
             }
         } else if (authMode === 'reset-password') {
@@ -341,27 +314,6 @@ const Login = ({ onLogin }) => {
                 setIsLoading(false)
                 if (err.response && err.response.status === 401) {
                     setError('Incorrect security answer.')
-                } else {
-                    console.error(err)
-                    setError('Failed to reset password.')
-                }
-            }
-        } else if (authMode === 'verify-otp') {
-            try {
-                const response = await axios.post(`${import.meta.env.VITE_API_URL}/auth/reset-password-otp`, {
-                    username,
-                    otp,
-                    newPassword
-                })
-                setIsLoading(false)
-                setSuccessMsg(response.data.message)
-                setTimeout(() => {
-                    switchMode('login')
-                }, 2000)
-            } catch (err) {
-                setIsLoading(false)
-                if (err.response && err.response.status === 401) {
-                    setError(err.response.data.detail || 'Incorrect OTP.')
                 } else {
                     console.error(err)
                     setError('Failed to reset password.')
@@ -899,36 +851,8 @@ const Login = ({ onLogin }) => {
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                                 required
-                                disabled={authMode === 'reset-password' || authMode === 'verify-otp'}
+                                disabled={authMode === 'reset-password'}
                             />
-
-                            {authMode === 'forgot-password' && (
-                                <div className="space-y-4 pt-4 mt-2 animate-in fade-in duration-300">
-                                    <div className="text-sm font-semibold text-slate-300 mb-2">Choose Recovery Method</div>
-                                    <div className="flex bg-[#02050E]/80 border border-white/10 rounded-xl p-1 relative">
-                                        <div className="absolute inset-1 flex pointer-events-none">
-                                            <div className={`w-1/2 bg-[#0284c7] rounded-lg shadow-[0_2px_10px_rgba(2,132,199,0.3)] transition-transform duration-300 ease-in-out ${resetMethod === 'question' ? 'translate-x-0' : 'translate-x-full'}`}></div>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => setResetMethod('question')}
-                                            className={`relative flex-1 py-2 text-sm font-semibold rounded-lg transition-colors z-10 ${resetMethod === 'question' ? 'text-white' : 'text-slate-400 hover:text-white'}`}
-                                        >
-                                            Security Question
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setResetMethod('email')}
-                                            className={`relative flex-1 py-2 text-sm font-semibold rounded-lg transition-colors z-10 ${resetMethod === 'email' ? 'text-white' : 'text-slate-400 hover:text-white'}`}
-                                        >
-                                            Email OTP
-                                        </button>
-                                    </div>
-                                    <div className="text-xs text-slate-500 italic mt-2 text-center">
-                                        {resetMethod === 'question' ? 'Answer the security question you set during registration.' : 'We will send a 6-digit code to your registered email.'}
-                                    </div>
-                                </div>
-                            )}
 
                             {(authMode === 'login' || authMode === 'register') && (
                                 <div>
@@ -1010,35 +934,6 @@ const Login = ({ onLogin }) => {
                                         value={securityAnswer}
                                         onChange={(e) => setSecurityAnswer(e.target.value)}
                                         required
-                                    />
-
-                                    <FloatingInput
-                                        id="newPassword"
-                                        label="New Password"
-                                        type={showNewPassword ? "text" : "password"}
-                                        value={newPassword}
-                                        onChange={(e) => setNewPassword(e.target.value)}
-                                        required
-                                        rightIcon={showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                                        onRightIconClick={() => setShowNewPassword(!showNewPassword)}
-                                    />
-                                </div>
-                            )}
-
-                            {authMode === 'verify-otp' && (
-                                <div className="space-y-4 pt-4 mt-2 animate-in fade-in duration-300">
-                                    <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-center shadow-inner">
-                                        <div className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-2">Check Your Email</div>
-                                        <div className="font-medium text-emerald-100 text-sm">We've sent a 6-digit code to your registered email address.</div>
-                                    </div>
-
-                                    <FloatingInput
-                                        id="otp"
-                                        label="6-Digit OTP"
-                                        value={otp}
-                                        onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
-                                        required
-                                        maxLength="6"
                                     />
 
                                     <FloatingInput

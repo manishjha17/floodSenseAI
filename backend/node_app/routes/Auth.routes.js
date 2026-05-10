@@ -9,8 +9,6 @@ router.get('/pending-rescuers', verifyAdmin, authController.getPendingRescuers);
 router.post('/verify-rescuer', verifyAdmin, authController.verifyRescuer);
 router.post('/forgot-password-question', authController.getSecurityQuestion);
 router.post('/reset-password', authController.resetPassword);
-router.post('/forgot-password-otp', authController.forgotPasswordOtp);
-router.post('/reset-password-otp', authController.resetPasswordOtp);
 router.get('/profile/:username', verifyToken, authController.getProfile);
 
 module.exports = router;
