@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 import { Eye, EyeOff, X, UploadCloud, CheckCircle2, ChevronDown, Trash2 } from 'lucide-react'
 
-// Reusable custom floating label input
 const FloatingInput = ({ label, id, type = "text", value, onChange, required, rightIcon, onRightIconClick, className = "", ...props }) => {
     return (
         <div className={`relative ${className}`}>
@@ -33,14 +32,14 @@ const FloatingInput = ({ label, id, type = "text", value, onChange, required, ri
 }
 
 const Login = ({ onLogin }) => {
-    // Scroll state for navbar
+    //Scroll state for navbar
     const [isScrolled, setIsScrolled] = useState(false)
 
-    // Auth Modal State
+    //Auth Modal State
     const [showLoginModal, setShowLoginModal] = useState(false)
-    const [authMode, setAuthMode] = useState('login') // 'login', 'register', 'forgot-password', 'reset-password'
+    const [authMode, setAuthMode] = useState('login')
 
-    // Form State
+    //Form State
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
     const [newPassword, setNewPassword] = useState('')
@@ -49,7 +48,7 @@ const Login = ({ onLogin }) => {
     const [selectedRole, setSelectedRole] = useState('citizen')
     const [passwordBlurred, setPasswordBlurred] = useState(false)
 
-    // Registration extra fields
+    //Registration extra fields
     const [fullName, setFullName] = useState('')
     const [email, setEmail] = useState('')
     const [phone, setPhone] = useState('')
@@ -63,13 +62,12 @@ const Login = ({ onLogin }) => {
     const [successMsg, setSuccessMsg] = useState('')
     const [isLoading, setIsLoading] = useState(false)
 
-    // Custom Dropdown State
     const [isRoleOpen, setIsRoleOpen] = useState(false)
     const [isQuestionOpen, setIsQuestionOpen] = useState(false)
     const roleRef = useRef(null)
     const questionRef = useRef(null)
 
-    // Security Question state
+    //Security Question state
     const [securityQuestion, setSecurityQuestion] = useState('What was your first pet\'s name?')
     const [securityAnswer, setSecurityAnswer] = useState('')
 
@@ -101,7 +99,6 @@ const Login = ({ onLogin }) => {
         return () => window.removeEventListener('scroll', handleScroll)
     }, [])
 
-    // Scroll Reveal Animation
     useEffect(() => {
         const observer = new IntersectionObserver(
             (entries) => {
@@ -154,7 +151,7 @@ const Login = ({ onLogin }) => {
         setAuthMode(mode)
         resetForm()
         if (mode === 'register' && selectedRole === 'admin') {
-            setSelectedRole('citizen') // Admin registration not allowed through public UI
+            setSelectedRole('citizen')
         }
     }
 
@@ -164,7 +161,7 @@ const Login = ({ onLogin }) => {
         setSuccessMsg('')
         setIsLoading(true)
 
-        // Password Complexity Validation for Register/Reset
+        //Password Complexity Validation for Register/Reset
         if (authMode === 'register' || authMode === 'reset-password') {
             const pwd = authMode === 'register' ? password : newPassword;
             const hasMinLen = pwd.length >= 8;
@@ -208,14 +205,14 @@ const Login = ({ onLogin }) => {
                 }
             }
         } else if (authMode === 'register') {
-            // Registration Mode
+            //Registration Mode
             if (!idProofData) {
                 setError('ID Proof Document is required.')
                 setIsLoading(false)
                 return
             }
 
-            // Phone Validation
+            //Phone Validation
             if (phone) {
                 const phoneRegex = /^\+?[0-9]{10,15}$/;
                 if (!phoneRegex.test(phone)) {
@@ -225,9 +222,9 @@ const Login = ({ onLogin }) => {
                 }
             }
 
-            // Email Validation
+            //Email Validation
             if (email) {
-                // Regex for standard email validation
+                //Regex for standard email validation
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!emailRegex.test(email)) {
                     setError('Invalid email address format. Please enter a valid email.');
@@ -326,7 +323,7 @@ const Login = ({ onLogin }) => {
         onLogin('guest', null)
     }
 
-    // Available roles in dropdown based on mode
+    //Available roles in dropdown based on mode
     const roles = [
         { id: 'citizen', label: 'Citizen', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
         { id: 'rescuer', label: 'Rescuer', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>, color: 'text-[#0284c7]', bg: 'bg-[#0284c7]/10' }
@@ -338,13 +335,12 @@ const Login = ({ onLogin }) => {
     return (
         <div className="min-h-screen bg-[#020813] text-slate-300 font-sans selection:bg-[#0284c7]/30 selection:text-white relative">
 
-            {/* Background Ambient Glows */}
             <div className="fixed inset-0 z-0 pointer-events-none opacity-40">
                 <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-cyan-600/10 blur-[120px] rounded-full"></div>
                 <div className="absolute top-[40%] right-[-10%] w-[40vw] h-[40vw] bg-blue-600/10 blur-[120px] rounded-full"></div>
             </div>
 
-            {/* Sticky Navbar */}
+            {/*Sticky Navbar*/}
             <nav className={`fixed top-0 w-full z-50 transition-all duration-300 border-b ${isScrolled ? 'bg-[#020813]/80 backdrop-blur-xl border-white/10 py-4 shadow-lg shadow-black/50' : 'bg-transparent border-transparent py-6'}`}>
                 <div className="max-w-7xl mx-auto px-6 md:px-12 flex justify-between items-center">
                     <div className="flex items-center gap-3">
@@ -370,10 +366,10 @@ const Login = ({ onLogin }) => {
                 </div>
             </nav>
 
-            {/* Main Content */}
+            {/*Main Content*/}
             <main className="relative z-10 pt-32">
 
-                {/* 1. Hero Section */}
+                {/*Hero Section*/}
                 <section className="scroll-reveal opacity-0 translate-y-8 transition-all duration-1000 ease-out max-w-7xl mx-auto px-6 md:px-12 pt-16 pb-24 text-center lg:text-left flex flex-col lg:flex-row items-center gap-16">
                     <div className="lg:w-1/2 space-y-8">
 
@@ -397,17 +393,14 @@ const Login = ({ onLogin }) => {
                         </div>
                     </div>
 
-                    {/* Hero Abstract UI Preview */}
                     <div className="lg:w-1/2 w-full relative">
                         <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/20 to-blue-600/20 blur-3xl rounded-full"></div>
                         <div className="relative bg-[#0d1526]/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden aspect-[4/3] flex flex-col">
-                            {/* Faux Header */}
                             <div className="h-10 border-b border-white/5 flex items-center px-4 gap-2">
                                 <div className="w-3 h-3 rounded-full bg-red-500/50"></div>
                                 <div className="w-3 h-3 rounded-full bg-yellow-500/50"></div>
                                 <div className="w-3 h-3 rounded-full bg-green-500/50"></div>
                             </div>
-                            {/* Faux Content */}
                             <div className="flex-1 p-6 flex flex-col gap-4">
                                 <div className="w-1/3 h-4 rounded-md bg-white/10"></div>
                                 <div className="flex gap-4">
@@ -422,7 +415,6 @@ const Login = ({ onLogin }) => {
                                 </div>
                                 <div className="flex-1 rounded-xl bg-[url('https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=1000&auto=format&fit=crop')] bg-cover bg-center border border-white/10 relative overflow-hidden">
                                     <div className="absolute inset-0 bg-[#020813]/60"></div>
-                                    {/* Faux Map Pins */}
                                     <div className="absolute top-1/2 left-1/3 w-4 h-4 bg-red-500 rounded-full shadow-[0_0_20px_rgba(239,68,68,1)] animate-pulse"></div>
                                     <div className="absolute top-1/3 right-1/4 w-3 h-3 bg-orange-500 rounded-full shadow-[0_0_15px_rgba(249,115,22,1)] animate-pulse"></div>
                                 </div>
@@ -431,7 +423,7 @@ const Login = ({ onLogin }) => {
                     </div>
                 </section>
 
-                {/* 2. Problem / Solution Split */}
+                {/*Problem/Solution Split*/}
                 <section className="scroll-reveal opacity-0 translate-y-8 transition-all duration-1000 ease-out bg-white/[0.02] border-y border-white/5 py-24">
                     <div className="max-w-7xl mx-auto px-6 md:px-12 grid md:grid-cols-2 gap-16 items-center">
                         <div className="space-y-6">
@@ -449,7 +441,7 @@ const Login = ({ onLogin }) => {
                     </div>
                 </section>
 
-                {/* 3. Features Grid */}
+                {/*Features Grid*/}
                 <section id="features" className="scroll-reveal opacity-0 translate-y-8 transition-all duration-1000 ease-out max-w-7xl mx-auto px-6 md:px-12 py-32">
                     <div className="text-center mb-16 space-y-4">
                         <h2 className="text-4xl font-extrabold text-white">Platform Capabilities</h2>
@@ -457,7 +449,7 @@ const Login = ({ onLogin }) => {
                     </div>
 
                     <div className="grid md:grid-cols-3 gap-6">
-                        {/* Feature 1 */}
+                        {/*Feature 1*/}
                         <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 hover:bg-[#171717] hover:border-cyan-500/30 transition-all group">
                             <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                                 <svg className="w-6 h-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" /></svg>
@@ -465,7 +457,7 @@ const Login = ({ onLogin }) => {
                             <h3 className="text-xl font-bold text-white mb-3">Real-time Flood Prediction</h3>
                             <p className="text-slate-400 leading-relaxed text-sm">Enter any location and get an instant flood risk score — Low, Moderate, High, or Severe — based on live rainfall, river level, and soil data.</p>
                         </div>
-                        {/* Feature 2 */}
+                        {/*Feature 2*/}
                         <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 hover:bg-[#171717] hover:border-cyan-500/30 transition-all group relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 blur-3xl"></div>
                             <div className="w-12 h-12 bg-cyan-500/10 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
@@ -474,7 +466,7 @@ const Login = ({ onLogin }) => {
                             <h3 className="text-xl font-bold text-white mb-3">AI Image Assessment</h3>
                             <p className="text-slate-400 leading-relaxed text-sm">Upload drone or satellite imagery of affected areas. Our custom CNN model classifies structural damage as Minor, Moderate, or Severe instantly.</p>
                         </div>
-                        {/* Feature 3 */}
+                        {/*Feature 3*/}
                         <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 hover:bg-[#171717] hover:border-red-500/30 transition-all group">
                             <div className="w-12 h-12 bg-red-500/10 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                                 <svg className="w-6 h-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
@@ -485,7 +477,7 @@ const Login = ({ onLogin }) => {
                     </div>
                 </section>
 
-                {/* 4. Workflow Section */}
+                {/*workflow*/}
                 <section id="workflow" className="scroll-reveal opacity-0 translate-y-8 transition-all duration-1000 ease-out bg-[#040814] py-32 border-y border-white/5 relative overflow-hidden">
                     <div className="absolute top-0 right-1/4 w-[40vw] h-[40vw] bg-cyan-600/5 blur-[120px] rounded-full pointer-events-none"></div>
                     <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
@@ -495,13 +487,13 @@ const Login = ({ onLogin }) => {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
-                            {/* Desktop Connectors - Row 1 (1 -> 2 -> 3) */}
+                            {/*connector1*/}
                             <div className="hidden md:block absolute top-[28px] left-[16.666%] right-[16.666%] h-0.5 bg-gradient-to-r from-cyan-500/50 via-blue-500/50 to-indigo-500/50 pointer-events-none"></div>
 
-                            {/* Mobile Connectors - Vertical */}
+                            {/*connector2*/}
                             <div className="md:hidden absolute top-[28px] bottom-[28px] left-[27px] w-0.5 bg-gradient-to-b from-cyan-500/50 via-purple-500/50 to-emerald-500/50 pointer-events-none"></div>
 
-                            {/* Step 1 */}
+                            {/*Step 1*/}
                             <div className="relative pl-16 md:pl-0 md:pt-16">
                                 <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 md:top-0 w-14 h-14 bg-[#060B15] border-2 border-cyan-500 rounded-2xl flex items-center justify-center font-bold text-xl text-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)] z-10">1</div>
                                 <div className="md:text-center">
@@ -509,7 +501,7 @@ const Login = ({ onLogin }) => {
                                     <p className="text-slate-400 leading-relaxed text-sm">The user enters a location. We fetch live rainfall, river discharge, and soil moisture data from free weather APIs for that area.</p>
                                 </div>
                             </div>
-                            {/* Step 2 */}
+                            {/*Step 2*/}
                             <div className="relative pl-16 md:pl-0 md:pt-16">
                                 <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 md:top-0 w-14 h-14 bg-[#060B15] border-2 border-blue-500 rounded-2xl flex items-center justify-center font-bold text-xl text-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.3)] z-10">2</div>
                                 <div className="md:text-center">
@@ -517,7 +509,7 @@ const Login = ({ onLogin }) => {
                                     <p className="text-slate-400 leading-relaxed text-sm">Our ML model analyses the live data and gives a flood risk score — Low, Moderate, High, or Severe — with a clear explanation.</p>
                                 </div>
                             </div>
-                            {/* Step 3 */}
+                            {/*Step 3*/}
                             <div className="relative pl-16 md:pl-0 md:pt-16">
                                 <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 md:top-0 w-14 h-14 bg-[#060B15] border-2 border-indigo-500 rounded-2xl flex items-center justify-center font-bold text-xl text-indigo-400 shadow-[0_0_20px_rgba(99,102,241,0.3)] z-10">3</div>
                                 <div className="md:text-center">
@@ -527,15 +519,12 @@ const Login = ({ onLogin }) => {
                             </div>
                         </div>
 
-                        {/* Row 2 Flow */}
+                        {/*Row 2 Flow*/}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8 md:mt-16 relative">
-                            {/* Desktop Connector - Vertical connection from Row 1 to Row 2 on right side (Snake) */}
                             <div className="hidden md:block absolute -top-16 right-[16.666%] w-0.5 h-16 bg-gradient-to-b from-indigo-500/50 to-purple-500/50 pointer-events-none"></div>
-
-                            {/* Desktop Connectors - Row 2 (6 <- 5 <- 4) */}
                             <div className="hidden md:block absolute top-[28px] left-[16.666%] right-[16.666%] h-0.5 bg-gradient-to-r from-emerald-500/50 via-pink-500/50 to-purple-500/50 pointer-events-none"></div>
 
-                            {/* Step 4 */}
+                            {/*Step 4*/}
                             <div className="relative pl-16 md:pl-0 md:pt-16 md:order-3">
                                 <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 md:top-0 w-14 h-14 bg-[#060B15] border-2 border-purple-500 rounded-2xl flex items-center justify-center font-bold text-xl text-purple-400 shadow-[0_0_20px_rgba(168,85,247,0.3)] z-10">4</div>
                                 <div className="md:text-center">
@@ -543,7 +532,7 @@ const Login = ({ onLogin }) => {
                                     <p className="text-slate-400 leading-relaxed text-sm">A detailed damage report is automatically created and can be downloaded as a PDF, showing risk scores, image results, and location details.</p>
                                 </div>
                             </div>
-                            {/* Step 5 */}
+                            {/*Step 5*/}
                             <div className="relative pl-16 md:pl-0 md:pt-16 md:order-2">
                                 <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 md:top-0 w-14 h-14 bg-[#060B15] border-2 border-pink-500 rounded-2xl flex items-center justify-center font-bold text-xl text-pink-400 shadow-[0_0_20px_rgba(236,72,153,0.3)] z-10">5</div>
                                 <div className="md:text-center">
@@ -551,7 +540,7 @@ const Login = ({ onLogin }) => {
                                     <p className="text-slate-400 leading-relaxed text-sm">Citizens can submit an urgent help request with their location and situation. Rescue teams are notified with the priority level.</p>
                                 </div>
                             </div>
-                            {/* Step 6 */}
+                            {/*Step 6*/}
                             <div className="relative pl-16 md:pl-0 md:pt-16 md:order-1">
                                 <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 md:top-0 w-14 h-14 bg-[#060B15] border-2 border-emerald-500 rounded-2xl flex items-center justify-center font-bold text-xl text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.3)] z-10">6</div>
                                 <div className="md:text-center">
@@ -563,9 +552,9 @@ const Login = ({ onLogin }) => {
                     </div>
                 </section>
 
-                {/* 5. Impact Section */}
+                {/*Impact Section*/}
                 <section id="impact" className="scroll-reveal opacity-0 translate-y-8 transition-all duration-1000 ease-out max-w-7xl mx-auto px-6 md:px-12 py-32">
-                    {/* Section Header — same pattern as other sections */}
+                    {/*Section Header — same pattern as other sections*/}
                     <div className="text-center mb-16 space-y-4">
                         <h2 className="text-4xl font-extrabold text-white">Real-world <span className="text-cyan-400">Impact</span></h2>
                         <p className="text-slate-400 text-lg max-w-2xl mx-auto">
@@ -625,7 +614,7 @@ const Login = ({ onLogin }) => {
                         </div>
                     </div>
                 </section>
-                {/* 6. SDG Mapping Section */}
+                {/*SDG Mapping Section*/}
                 <div className="bg-white/[0.02] border-y border-white/5">
                     <section id="sdg" className="scroll-reveal opacity-0 translate-y-8 transition-all duration-1000 ease-out max-w-7xl mx-auto px-6 md:px-12 pt-16 pb-32">
                         <div className="text-center mb-16 space-y-4">
@@ -635,7 +624,7 @@ const Login = ({ onLogin }) => {
                         </div>
 
                         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {/* SDG 3 */}
+                            {/*SDG 3*/}
                             <div className="group relative bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 hover:border-green-500/40 transition-all overflow-hidden">
                                 <div className="absolute top-0 right-0 w-24 h-24 bg-green-500/5 blur-2xl rounded-full group-hover:bg-green-500/10 transition-all"></div>
                                 <div className="w-14 h-14 rounded-2xl bg-green-600 flex items-center justify-center mb-5 shadow-[0_0_20px_rgba(22,163,74,0.3)] group-hover:scale-110 transition-transform">
@@ -646,7 +635,7 @@ const Login = ({ onLogin }) => {
                                 <p className="text-slate-400 text-sm leading-relaxed">Early flood warnings and real-time emergency resource mapping help rescue teams reach the injured faster, reducing flood-related casualties and health crises.</p>
                             </div>
 
-                            {/* SDG 9 */}
+                            {/*SDG 9*/}
                             <div className="group relative bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 hover:border-orange-500/40 transition-all overflow-hidden">
                                 <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/5 blur-2xl rounded-full group-hover:bg-orange-500/10 transition-all"></div>
                                 <div className="w-14 h-14 rounded-2xl bg-orange-500 flex items-center justify-center mb-5 shadow-[0_0_20px_rgba(249,115,22,0.3)] group-hover:scale-110 transition-transform">
@@ -657,7 +646,7 @@ const Login = ({ onLogin }) => {
                                 <p className="text-slate-400 text-sm leading-relaxed">Our CNN-powered damage detection and real-time API infrastructure support resilient, tech-driven disaster response systems.</p>
                             </div>
 
-                            {/* SDG 11 */}
+                            {/*SDG 11*/}
                             <div className="group relative bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 hover:border-amber-500/40 transition-all overflow-hidden">
                                 <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 blur-2xl rounded-full group-hover:bg-amber-500/10 transition-all"></div>
                                 <div className="w-14 h-14 rounded-2xl bg-amber-500 flex items-center justify-center mb-5 shadow-[0_0_20px_rgba(245,158,11,0.3)] group-hover:scale-110 transition-transform">
@@ -668,7 +657,7 @@ const Login = ({ onLogin }) => {
                                 <p className="text-slate-400 text-sm leading-relaxed">By classifying structural damage at scale, FloodSense AI directly informs urban planners and governments on rebuilding resilient, flood-resistant infrastructure.</p>
                             </div>
 
-                            {/* SDG 13 */}
+                            {/*SDG 13*/}
                             <div className="group relative bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 hover:border-cyan-500/40 transition-all overflow-hidden">
                                 <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/5 blur-2xl rounded-full group-hover:bg-cyan-500/10 transition-all"></div>
                                 <div className="w-14 h-14 rounded-2xl bg-cyan-600 flex items-center justify-center mb-5 shadow-[0_0_20px_rgba(8,145,178,0.3)] group-hover:scale-110 transition-transform">
@@ -680,7 +669,7 @@ const Login = ({ onLogin }) => {
                             </div>
                         </div>
 
-                        {/* UN SDG Banner */}
+                        {/*UN SDG Banner*/}
                         <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 p-6 rounded-2xl bg-white/[0.02] border border-white/5">
                             <div className="flex items-center gap-3">
                                 <div className="flex gap-2">
@@ -696,10 +685,10 @@ const Login = ({ onLogin }) => {
                     </section>
                 </div>
 
-                {/* Footer */}
+                {/*Footer*/}
                 <footer className="scroll-reveal opacity-0 transition-all duration-1000 ease-out border-t border-white/5 bg-[#00040d] px-6 md:px-12 py-8">
                     <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-                        {/* Brand */}
+                        {/*Brand*/}
                         <div className="flex items-center gap-2 text-slate-400">
                             <svg className="w-4 h-4 text-cyan-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -709,7 +698,7 @@ const Login = ({ onLogin }) => {
                             <span className="text-xs">AI-driven flood intelligence &amp; damage assessment</span>
                         </div>
 
-                        {/* CTA */}
+                        {/*CTA*/}
                         <button
                             onClick={() => setShowLoginModal(true)}
                             className="text-sm font-semibold text-slate-300 hover:text-cyan-400 transition-colors flex items-center gap-1.5 group"
@@ -720,7 +709,7 @@ const Login = ({ onLogin }) => {
                             </svg>
                         </button>
 
-                        {/* Copyright */}
+                        {/*Copyright*/}
                         <p className="text-xs text-slate-600 font-medium">
                             © 2026 FloodSense AI
                         </p>
@@ -728,16 +717,13 @@ const Login = ({ onLogin }) => {
                 </footer>
             </main>
 
-            {/* Login / Register PREMIUM Modal Overlay */}
             {showLoginModal && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    {/* Backdrop */}
                     <div
                         className="absolute inset-0 bg-black/50 backdrop-blur-md transition-opacity"
                         onClick={() => setShowLoginModal(false)}
                     ></div>
 
-                    {/* Modal Content */}
                     <div className="relative w-full max-w-[480px] max-h-[90vh] overflow-y-auto custom-scrollbar bg-gradient-to-br from-[#02050E] to-[#060B15] backdrop-blur-[15px] border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.8)] rounded-2xl p-6 md:p-8 animate-in fade-in zoom-in-95 duration-200">
                         <button
                             className="absolute top-5 right-5 text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 p-1.5 rounded-full z-10 transition-colors"
@@ -751,10 +737,8 @@ const Login = ({ onLogin }) => {
                             <p className="text-sm text-slate-400 opacity-70 mt-1">Authenticate or create an account</p>
                         </div>
 
-                        {/* Tabs (Hidden during forgot-password flow) */}
                         {authMode === 'login' || authMode === 'register' ? (
                             <div className="relative flex p-1 bg-[#02050E]/80 rounded-xl mb-8 border border-white/10">
-                                {/* Animated pill background */}
                                 <div className="absolute inset-1 flex pointer-events-none">
                                     <div className={`w-1/2 bg-[#0284c7] rounded-lg shadow-[0_2px_10px_rgba(2,132,199,0.3)] transition-transform duration-300 ease-in-out ${authMode === 'login' ? 'translate-x-0' : 'translate-x-full'}`}></div>
                                 </div>
@@ -787,7 +771,7 @@ const Login = ({ onLogin }) => {
                         )}
 
                         <form onSubmit={handleAuthSubmit} className="space-y-4">
-                            {/* Role Selector */}
+                            {/*Role Selector*/}
                             {(authMode === 'login' || authMode === 'register') && (
                                 <div className="space-y-1.5 relative mb-2" ref={roleRef}>
                                     <button
@@ -844,7 +828,6 @@ const Login = ({ onLogin }) => {
                                 </div>
                             )}
 
-                            {/* CORE AUTH FIELDS */}
                             <FloatingInput
                                 id="username"
                                 label="Username"
@@ -869,7 +852,6 @@ const Login = ({ onLogin }) => {
                                         onRightIconClick={() => setShowPassword(!showPassword)}
                                     />
 
-                                    {/* Password Validator UI (Context-Aware) */}
                                     {authMode === 'register' && (
                                         (() => {
                                             const rules = [
@@ -881,7 +863,6 @@ const Login = ({ onLogin }) => {
                                             ];
                                             const allMet = rules.every(r => r.met);
 
-                                            // Only show if not all met, or if we haven't finished typing (not blurred)
                                             if (allMet && passwordBlurred) return null;
 
                                             return (
@@ -920,7 +901,7 @@ const Login = ({ onLogin }) => {
                                 </div>
                             )}
 
-                            {/* FORGOT PASSWORD FIELDS */}
+                            {/*FORGOT PASSWORD FIELDS*/}
                             {authMode === 'reset-password' && (
                                 <div className="space-y-4 pt-4 mt-2 animate-in fade-in duration-300">
                                     <div className="p-4 bg-white/5 border border-white/10 rounded-xl text-center shadow-inner">
@@ -949,7 +930,7 @@ const Login = ({ onLogin }) => {
                                 </div>
                             )}
 
-                            {/* REGISTRATION FIELDS */}
+                            {/*REGISTRATION FIELDS*/}
                             {authMode === 'register' && (
                                 <div className="space-y-4 pt-4 mt-2 animate-in fade-in duration-300">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -958,7 +939,7 @@ const Login = ({ onLogin }) => {
                                             label="Full Name"
                                             value={fullName}
                                             onChange={(e) => {
-                                                // Only allow letters, spaces, hyphens, and apostrophes
+                                                //Only allow letters, spaces, hyphens, and apostrophes
                                                 const val = e.target.value.replace(/[^a-zA-Z\s\-']/g, '');
                                                 setFullName(val);
                                             }}
@@ -981,14 +962,14 @@ const Login = ({ onLogin }) => {
                                             type="tel"
                                             value={phone}
                                             onChange={(e) => {
-                                                // Only allow numbers, spaces, plus sign, hyphens, and parentheses
+                                                //Only allow numbers, spaces, plus sign,hyphens,and,parentheses
                                                 const val = e.target.value.replace(/[^0-9\s+\-()]/g, '');
                                                 setPhone(val);
                                             }}
                                             required={selectedRole === 'rescuer'}
                                         />
 
-                                        {/* Address logic for Citizen / Rescuer */}
+                                        {/*Address logic for Citizen / Rescuer*/}
                                         {selectedRole === 'citizen' ? (
                                             <FloatingInput
                                                 id="address"
@@ -1018,7 +999,7 @@ const Login = ({ onLogin }) => {
                                         />
                                     )}
 
-                                    {/* Security Question Field */}
+                                    {/*Security Question Field*/}
                                     <div className="space-y-1.5 relative mb-2" ref={questionRef}>
                                         <button
                                             type="button"
@@ -1074,7 +1055,7 @@ const Login = ({ onLogin }) => {
                                         required
                                     />
 
-                                    {/* ID Proof Dropzone */}
+                                    {/*ID Proof*/}
                                     <div className="pt-2">
                                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.05em] block mb-2 pl-4">
                                             Valid ID Proof Document <span className="text-red-500">*</span>

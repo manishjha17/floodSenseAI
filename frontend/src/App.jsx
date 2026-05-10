@@ -47,7 +47,7 @@ function App() {
     setUsername(null)
     delete axios.defaults.headers.common['Authorization']
     localStorage.removeItem(`latest_assessment_${username || 'guest'}`)
-    localStorage.removeItem('latest_assessment') // fallback cleanup
+    localStorage.removeItem('latest_assessment')
     localStorage.removeItem('auth_session')
     sessionStorage.setItem('auto_open_login', 'true')
   }

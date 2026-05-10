@@ -6,28 +6,24 @@ from torchvision import datasets, models, transforms
 import os
 from tqdm import tqdm
 
-# --- Configuration ---
-DATA_DIR = 'data_4_class'  # Folder created by prepare_xview_data.py
+DATA_DIR = 'data_4_class'
 MODEL_PATH = 'models/flood_model_4_class.pth'
 NUM_CLASSES = 4
-NUM_EPOCHS = 30  # Increased for Kaggle GPU training
-BATCH_SIZE = 32 # Increased batch size for more stable training
+NUM_EPOCHS = 30 
+BATCH_SIZE = 32 
 LEARNING_RATE = 0.001
 
 def train_model():
-    """
-    Handles data loading, model definition, and training for the 4-class model.
-    """
-    print("--- Initializing 4-Class Model Training ---")
+    print("Initializing 4-Class Model Training")
 
-    # 1. Define robust data transformations for aerial imagery
+    #transforming the satellite image
     data_transforms = {
         'train': transforms.Compose([
             transforms.RandomResizedCrop(224),
             transforms.RandomHorizontalFlip(),
-            transforms.RandomVerticalFlip(), # Added for aerial perspective
-            transforms.RandomRotation(degrees=45), # Added for varied angles
-            transforms.ColorJitter(brightness=0.2, contrast=0.2), # Added for lighting variations
+            transforms.RandomVerticalFlip(),
+            transforms.RandomRotation(degrees=45),
+            transforms.ColorJitter(brightness=0.2, contrast=0.2), 
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ]),
@@ -39,7 +35,7 @@ def train_model():
         ]),
     }
 
-    # 2. Load datasets using ImageFolder
+    #loading dataset
     print(f"Loading data from: {DATA_DIR}")
     try:
         image_datasets = {x: datasets.ImageFolder(os.path.join(DATA_DIR, x), data_transforms[x])
@@ -62,22 +58,22 @@ def train_model():
         
     print(f"Classes found: {class_names}")
 
-    # 3. Load a pre-trained EfficientNet-B0 model and adapt it
+    # setting up efficientnet-b0
     model = models.efficientnet_b0(weights='IMAGENET1K_V1')
     num_ftrs = model.classifier[1].in_features
-    # Change the final layer to output 4 classes
+    # changing last layer for our 4 damage classes
     model.classifier[1] = nn.Linear(num_ftrs, NUM_CLASSES)
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
     print(f"Using device: {device}")
 
-    # 4. Define loss function and optimizer
+    #loss and optimizer setup
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.AdamW(model.parameters(), lr=LEARNING_RATE, weight_decay=1e-4) # Switched to AdamW
-    scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=NUM_EPOCHS) # Added LR Scheduler
+    optimizer = optim.AdamW(model.parameters(), lr=LEARNING_RATE, weight_decay=1e-4) # adamw
+    scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=NUM_EPOCHS) # lr scheduler
 
-    # --- Main Training Loop ---
+    #training loop
     for epoch in range(NUM_EPOCHS):
         print(f'\nEpoch {epoch+1}/{NUM_EPOCHS}')
         print('-' * 10)
@@ -114,12 +110,11 @@ def train_model():
 
             print(f'{phase} Loss: {epoch_loss:.4f} Acc: {epoch_acc:.4f}')
 
-        # Step the scheduler at the end of every epoch (after val phase)
         scheduler.step()
 
-    print("\n--- Training Finished ---")
+    print("\nTraining Finished")
     
-    # 5. Save the trained model
+    #saving trained model
     os.makedirs("models", exist_ok=True)
     torch.save(model.state_dict(), MODEL_PATH)
     print(f"Model saved to {MODEL_PATH}")

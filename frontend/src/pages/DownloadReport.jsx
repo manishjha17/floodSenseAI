@@ -5,7 +5,7 @@ import { FileDown, MapPin, AlertCircle, CheckCircle2 } from 'lucide-react'
 const DownloadReport = ({ username }) => {
     const [address, setAddress] = useState('')
     const [assessment, setAssessment] = useState(null)
-    const [status, setStatus] = useState(null) // null, 'generating', 'success', 'error'
+    const [status, setStatus] = useState(null)
 
     useEffect(() => {
         const stored = localStorage.getItem(`latest_assessment_${username || 'guest'}`);
@@ -68,7 +68,7 @@ const DownloadReport = ({ username }) => {
             </div>
 
             <form onSubmit={handleDownload} className="bg-white/5 backdrop-blur-xl shadow-2xl rounded-2xl p-6 sm:p-8 space-y-6 border border-white/10 relative overflow-hidden group">
-                {/* Decorative background blur */}
+            
                 <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none transition-all group-hover:bg-indigo-500/10"></div>
 
                 <div className="space-y-2 relative z-10">

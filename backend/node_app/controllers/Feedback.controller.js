@@ -13,7 +13,6 @@ exports.submitFeedback = async (req, res) => {
 
         let imageUrl = null;
         if (image_data && image_data.startsWith('data:image')) {
-            // Upload base64 image to Cloudinary
             const uploadResponse = await cloudinary.uploader.upload(image_data, {
                 folder: 'flood_feedback',
             });
@@ -23,8 +22,6 @@ exports.submitFeedback = async (req, res) => {
 
         let parsedConfidence = null;
         if (confidence !== undefined && confidence !== null) {
-            // Remove any '%' signs and parse float to satisfy PostgreSQL's strict DOUBLE PRECISION type,
-            // because SQLite used to just accept strings silently.
             const confString = String(confidence).replace('%', '').trim();
             parsedConfidence = parseFloat(confString);
             if (isNaN(parsedConfidence)) parsedConfidence = null;
@@ -33,7 +30,7 @@ exports.submitFeedback = async (req, res) => {
         await Feedback.create({
             timestamp: getCurrentTimestamp(),
             imagePath: image_path,
-            imageUrl: imageUrl, // Save the cloud URL instead of base64
+            imageUrl: imageUrl, 
             textReport: text_report,
             prediction,
             confidence: parsedConfidence,
@@ -63,10 +60,6 @@ exports.updateLabel = async (req, res) => {
     try {
         const { id, corrected_label } = req.body;
         if (!id || !corrected_label) return res.status(400).json({ detail: "id and corrected_label required" });
-
-        // Update the label in the database
-        // We no longer write to the local filesystem (feedback_exports/) 
-        // because we are using persistent cloud storage.
         await Feedback.updateLabelAndMarkExported(id, corrected_label);
 
         res.json({ message: "Label updated successfully" });
@@ -93,7 +86,6 @@ exports.exportCorrectedImages = async (req, res) => {
             const { id, image_url, corrected_label } = row;
             if (image_url) {
                 try {
-                    // Fetch the image from Cloudinary to include in the ZIP
                     const imageResponse = await axios.get(image_url, { responseType: 'arraybuffer' });
                     const buffer = Buffer.from(imageResponse.data, 'binary');
                     const labelFolder = corrected_label.toLowerCase().replace(/ /g, '_');

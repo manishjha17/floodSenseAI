@@ -12,24 +12,24 @@ const AdminPanel = ({ userRole, forcedTab, username }) => {
     const isAdmin = userRole === 'admin'
     const [searchParams] = useSearchParams()
     const tabParam = searchParams.get('tab')
-    // forcedTab always wins (set by route); fall back to URL param or default
+    //forcedTab overrides everything
     const [internalTab, setInternalTab] = useState(tabParam || (isAdmin ? 'feedback' : 'emergencies'))
     const activeTab = forcedTab || internalTab
     const setActiveTab = (tab) => !forcedTab && setInternalTab(tab)
 
 
-    // Feedback State
+    //feedback state
     const [feedbackItems, setFeedbackItems] = useState([])
     const [loadingFeedback, setLoadingFeedback] = useState(true)
     const [selectedLabels, setSelectedLabels] = useState({})
     const [exportedItems, setExportedItems] = useState([])
     const [showHistory, setShowHistory] = useState(false)
 
-    // Rescuers State
+    //rescuers state
     const [pendingRescuers, setPendingRescuers] = useState([])
     const [loadingRescuers, setLoadingRescuers] = useState(true)
 
-    // Emergencies State
+    //emergencies state
     const [emergencies, setEmergencies] = useState([])
     const [loadingEmergencies, setLoadingEmergencies] = useState(true)
 
@@ -52,7 +52,7 @@ const AdminPanel = ({ userRole, forcedTab, username }) => {
         setLoadingEmergencies(true)
         try {
             const response = await axios.get(`${import.meta.env.VITE_API_URL}/help/requests`, getConfig())
-            // Admins see all; rescuers only see pending requests
+            //admin sees all, rescuers see pending
             const data = isAdmin ? response.data : response.data.filter(r => r.status !== 'fulfilled')
             setEmergencies(data)
         } catch (error) {
@@ -67,7 +67,7 @@ const AdminPanel = ({ userRole, forcedTab, username }) => {
             await axios.patch(`${import.meta.env.VITE_API_URL}/help/requests/${id}/fulfill`, {
                 rescuer_username: username || 'rescuer'
             }, getConfig())
-            // Remove from rescuer view (they only see pending); admin will see status update on refresh
+            //update local state for rescuer view
             setEmergencies(prev => prev.filter(e => e.id !== id))
         } catch (error) {
             console.error("Error resolving emergency:", error)
@@ -85,7 +85,7 @@ const AdminPanel = ({ userRole, forcedTab, username }) => {
             setFeedbackItems(allRes.data)
             setExportedItems(approvedRes.data)
 
-            // Initialize selected labels
+            //init labels
             const labels = {}
             allRes.data.forEach(item => {
                 labels[item.id] = item.corrected_label || CLASS_NAMES[0]
@@ -122,11 +122,10 @@ const AdminPanel = ({ userRole, forcedTab, username }) => {
             }, getConfig())
             alert('Label updated successfully!')
 
-            // Remove the item from the local state to prevent multiple updates
-            setFeedbackItems(prev => prev.filter(item => item.id !== id))
+            //remove item locally to avoid double updates
 
-            // We do NOT need to fetch all feedback from the server again since we've optimisticly removed it
-            // fetchFeedback()
+            //optimistic update, no refetch needed
+            //fetchFeedback()
         } catch (error) {
             console.error("Error updating label:", error)
             alert('Failed to update label')
@@ -173,7 +172,7 @@ const AdminPanel = ({ userRole, forcedTab, username }) => {
     const downloadIdProof = (base64String, username) => {
         if (!base64String) return
 
-        // Create a temporary link to trigger download
+        //temp link for download
         const a = document.createElement('a')
         a.href = base64String
         a.download = `ID_Proof_${username}`
@@ -194,7 +193,7 @@ const AdminPanel = ({ userRole, forcedTab, username }) => {
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* Header */}
+            {/*header info*/}
             <div className="border-b border-white/5 pb-2">
                 <div className="flex items-center gap-3 mb-6">
                     <div className="p-2.5 bg-indigo-500/20 rounded-xl border border-indigo-500/30 text-indigo-400">
@@ -206,7 +205,7 @@ const AdminPanel = ({ userRole, forcedTab, username }) => {
                     </div>
                 </div>
 
-                {/* Only show tab switcher if NOT in forced/standalone mode */}
+                {/*tab switcher*/}
                 {!forcedTab && (
                     <div className="flex gap-6 relative">
                         <button
@@ -251,7 +250,7 @@ const AdminPanel = ({ userRole, forcedTab, username }) => {
             </div>
 
 
-            {/* TAB: Feedback Review */}
+            {/*feedback review*/}
             {
                 activeTab === 'feedback' && (
                     <div className="space-y-6">
@@ -277,7 +276,7 @@ const AdminPanel = ({ userRole, forcedTab, username }) => {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {incorrectItems.map((item) => (
                                     <div key={item.id} className="bg-[#000000] rounded-2xl shadow-xl overflow-hidden border border-white/10 flex flex-col hover:border-indigo-500/30 transition-colors group">
-                                        {/* Image Display */}
+                                        {/*Image Display*/}
                                         {item.image_url ? (
                                             <div className="relative h-48 w-full group-hover:opacity-90 transition-opacity">
                                                 <img
@@ -296,9 +295,9 @@ const AdminPanel = ({ userRole, forcedTab, username }) => {
                                             </div>
                                         )}
 
-                                        {/* Info Section */}
+                                        {/*Info Section*/}
                                         <div className="p-5 flex-1 flex flex-col">
-                                            {/* Prediction Box */}
+                                            {/*model prediction*/}
                                             <div className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-xl mb-4 relative overflow-hidden">
                                                 <div className="absolute -right-4 -top-4 w-16 h-16 bg-rose-500/10 rounded-full blur-xl pointer-events-none"></div>
                                                 <p className="text-xs font-semibold text-rose-400 uppercase tracking-wider mb-1">Model predicted:</p>
@@ -311,7 +310,7 @@ const AdminPanel = ({ userRole, forcedTab, username }) => {
                                                 </div>
                                             </div>
 
-                                            {/* Text Report */}
+                                            {/*report text*/}
                                             {item.text_report && (
                                                 <div className="text-sm text-gray-300 bg-white/5 border border-white/5 p-3 rounded-xl max-h-24 overflow-y-auto custom-scrollbar mb-4 flex gap-2">
                                                     <FileText size={16} className="text-gray-500 flex-shrink-0 mt-0.5" />
@@ -320,7 +319,7 @@ const AdminPanel = ({ userRole, forcedTab, username }) => {
                                             )}
 
                                             <div className="mt-auto space-y-4 pt-2 border-t border-white/5">
-                                                {/* Label Selection */}
+                                                {/*label selection*/}
                                                 <div>
                                                     <label className="block text-xs font-medium text-gray-400 mb-2">
                                                         Select Correct Label:
@@ -338,7 +337,7 @@ const AdminPanel = ({ userRole, forcedTab, username }) => {
                                                     </select>
                                                 </div>
 
-                                                {/* Update Button */}
+                                                {/* update btn */}
                                                 <button
                                                     onClick={() => handleUpdateLabel(item.id)}
                                                     disabled={!selectedLabels[item.id] || selectedLabels[item.id] === 'TBD'}
@@ -353,7 +352,7 @@ const AdminPanel = ({ userRole, forcedTab, username }) => {
                                                         const d = new Date(item.timestamp);
                                                         if (isNaN(d.getTime())) return 'Invalid Date';
                                                         
-                                                        // Force treating the components as UTC to get correct IST shift
+                                                        //Force treating the components as UTC to get correct IST shift
                                                         const utcDate = new Date(Date.UTC(
                                                             d.getFullYear(), d.getMonth(), d.getDate(), 
                                                             d.getHours(), d.getMinutes(), d.getSeconds()
@@ -378,7 +377,7 @@ const AdminPanel = ({ userRole, forcedTab, username }) => {
                             </div>
                         )}
 
-                        {/* Previously Exported History */}
+                        {/*history*/}
                         {exportedItems.length > 0 && (
                             <div className="mt-4">
                                 <button
@@ -416,7 +415,7 @@ const AdminPanel = ({ userRole, forcedTab, username }) => {
     const d = new Date(item.timestamp);
     if (isNaN(d.getTime())) return 'Invalid Date';
 
-    // Force treating the components as UTC to get correct IST shift
+    //Force treating the components as UTC to get correct IST shift
     const utcDate = new Date(Date.UTC(
         d.getFullYear(), d.getMonth(), d.getDate(), 
         d.getHours(), d.getMinutes(), d.getSeconds()
@@ -434,7 +433,7 @@ const AdminPanel = ({ userRole, forcedTab, username }) => {
                 )
             }
 
-            {/* TAB: Rescuer Approvals */}
+            {/*rescuer approvals*/}
             {
                 activeTab === 'rescuers' && (
                     <div className="space-y-6">
@@ -557,7 +556,7 @@ const AdminPanel = ({ userRole, forcedTab, username }) => {
                     </div>
                 )
             }
-            {/* TAB: Live Emergencies */}
+            {/*live emergencies*/}
             {
                 activeTab === 'emergencies' && (
                     <div className="space-y-6">
@@ -598,7 +597,7 @@ const AdminPanel = ({ userRole, forcedTab, username }) => {
                                                     </span>
                                                     <span className="ml-1 text-sm text-gray-500 font-mono">{req.timestamp}</span>
                                                 </div>
-                                                {/* Rescuer: action button | Admin: read-only status badge */}
+                                                {/*status/action*/}
                                                 <div className="flex items-center gap-2">
                                                     {!isAdmin ? (
                                                         <button
@@ -648,7 +647,7 @@ const AdminPanel = ({ userRole, forcedTab, username }) => {
                                             </div>
                                         </div>
 
-                                        {/* Map link if coordinates exist */}
+                                        {/*map link*/}
                                         {req.lat && req.lng && (
                                             <div className="md:w-48 flex flex-col justify-center gap-3 border-t md:border-t-0 md:border-l border-white/10 pt-4 md:pt-0 md:pl-6">
                                                 <div className="text-center">

@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 
-// Fix for default marker icon missing in React Leaflet
+
 import icon from 'leaflet/dist/images/marker-icon.png'
 import iconShadow from 'leaflet/dist/images/marker-shadow.png'
 
@@ -16,7 +16,7 @@ let DefaultIcon = L.icon({
 
 L.Marker.prototype.options.icon = DefaultIcon;
 
-// Custom DivIcons for resources
+
 const createEmojiIcon = (emoji, bgColor) => {
     return new L.divIcon({
         className: 'custom-resource-icon',
@@ -27,13 +27,13 @@ const createEmojiIcon = (emoji, bgColor) => {
     });
 };
 
-const hospitalIcon = createEmojiIcon('🏥', 'rgba(239, 68, 68, 0.8)'); // Red
-const policeIcon = createEmojiIcon('🚓', 'rgba(59, 130, 246, 0.8)'); // Blue
-const fireIcon = createEmojiIcon('🚒', 'rgba(249, 115, 22, 0.8)'); // Orange
-const shelterIcon = createEmojiIcon('🏠', 'rgba(34, 197, 94, 0.8)'); // Green
-const foodIcon = createEmojiIcon('🍞', 'rgba(234, 179, 8, 0.8)'); // Yellow
-const waterIcon = createEmojiIcon('💧', 'rgba(139, 92, 246, 0.8)'); // Violet
-const defaultResourceIcon = createEmojiIcon('📍', 'rgba(107, 114, 128, 0.8)'); // Gray
+const hospitalIcon = createEmojiIcon('🏥', 'rgba(239, 68, 68, 0.8)');
+const policeIcon = createEmojiIcon('🚓', 'rgba(59, 130, 246, 0.8)');
+const fireIcon = createEmojiIcon('🚒', 'rgba(249, 115, 22, 0.8)'); 
+const shelterIcon = createEmojiIcon('🏠', 'rgba(34, 197, 94, 0.8)');  
+const foodIcon = createEmojiIcon('🍞', 'rgba(234, 179, 8, 0.8)');  
+const waterIcon = createEmojiIcon('💧', 'rgba(139, 92, 246, 0.8)');  
+const defaultResourceIcon = createEmojiIcon('📍', 'rgba(107, 114, 128, 0.8)');  
 
 const getIconForType = (type) => {
     const t = type.toLowerCase();
@@ -52,7 +52,6 @@ function ChangeView({ center }) {
     return null;
 }
 
-// Smart Location Selector using OpenStreetMap Geocoding API
 const LocationSelector = ({ setPosition, locationName, setLocationName }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [isSearching, setIsSearching] = useState(false);
@@ -66,7 +65,6 @@ const LocationSelector = ({ setPosition, locationName, setLocationName }) => {
         setSearchError('');
 
         try {
-            // Free geocoding using Open-Meteo (using fetch to avoid global Axios Auth headers)
             const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(searchQuery)}&count=1&format=json`);
             if (!res.ok) throw new Error('Geocoding failed');
             const data = await res.json();
@@ -75,8 +73,6 @@ const LocationSelector = ({ setPosition, locationName, setLocationName }) => {
             if (response.data && response.data.results && response.data.results.length > 0) {
                 const { latitude, longitude, name, country } = response.data.results[0];
                 setPosition([latitude, longitude]);
-
-                // Prevent duplicate naming if name and country are the same
                 const displayName = (country && country !== name) ? `${name}, ${country}` : name;
                 setLocationName(displayName);
 
@@ -99,37 +95,32 @@ const LocationSelector = ({ setPosition, locationName, setLocationName }) => {
                 setPosition([lat, lon]);
                 setSearchQuery("");
                 setSearchError("");
-
-                // Show loading state briefly
                 setLocationName("Locating...");
 
                 try {
-                    // Reverse geocoding using OpenStreetMap Nominatim with namedetails for English fallback
+                    
                     const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=en&namedetails=1`);
                     if (!res.ok) throw new Error('Reverse geocoding failed');
                     const data = await res.json();
 
-                    // Helper to force Latin/ASCII only (strips Hindi and other scripts)
                     const toLatin = (text) => (text || "").replace(/[^\x20-\x7E]/g, "").trim();
 
                     if (data && data.address) {
                         const addr = data.address;
-                        
-                        // Aggressively skip the first part (suburb/street) as it often lacks English translations
+
                         let city = toLatin(addr.city || addr.town || addr.county || addr.city_district);
                         let state = toLatin(addr.state || addr.region);
-                        
+
                         if (city && state) {
                             setLocationName(`${city}, ${state}`);
                         } else if (city) {
                             setLocationName(city);
                         } else {
-                            // Fallback to display_name but skip the first segment
                             const parts = (data.display_name || "").split(',');
-                            const cleanParts = parts.slice(1) // Skip the first part (street/suburb)
+                            const cleanParts = parts.slice(1)
                                 .map(p => toLatin(p))
                                 .filter(p => p.length > 2);
-                            
+
                             if (cleanParts.length > 0) {
                                 setLocationName(cleanParts.slice(0, 2).join(', '));
                             } else {
@@ -202,7 +193,7 @@ const LocationSelector = ({ setPosition, locationName, setLocationName }) => {
 };
 
 const FindResources = () => {
-    // Default location (e.g. Delhi)
+    
     const [position, setPosition] = useState([28.6139, 77.2090]);
     const [locationName, setLocationName] = useState('Delhi');
     const [resources, setResources] = useState([])
@@ -262,7 +253,6 @@ const FindResources = () => {
 
                 const elements = data.elements || [];
 
-                // Map OSM tags to our UI categories
                 const realResources = elements.map(node => {
                     let type = 'Resource';
                     const tags = node.tags || {};
@@ -327,7 +317,7 @@ const FindResources = () => {
                                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                 />
 
-                                {/* Primary Location Marker */}
+                                {/*Primary Location Marker*/}
                                 <Marker position={position}>
                                     <Popup className="dark-popup">
                                         <div className="p-1">
@@ -337,7 +327,7 @@ const FindResources = () => {
                                     </Popup>
                                 </Marker>
 
-                                {/* Nearby Resources Markers */}
+                                {/*Nearby Resources Markers*/}
                                 {resources.map((res, idx) => (
                                     <Marker key={`res-${idx}`} position={[res.lat, res.lon]} icon={getIconForType(res.type)}>
                                         <Popup className="dark-popup">

@@ -6,7 +6,7 @@ import { Navigation } from 'lucide-react'
 const RequestHelp = ({ username }) => {
     const [address, setAddress] = useState('')
     const [reportText, setReportText] = useState('')
-    const [status, setStatus] = useState(null) // null, 'submitting', 'success', 'error'
+    const [status, setStatus] = useState(null)
     const [message, setMessage] = useState('')
     const [lat, setLat] = useState(null)
     const [lng, setLng] = useState(null)
@@ -29,25 +29,21 @@ const RequestHelp = ({ username }) => {
                 setLng(longitude)
 
                 try {
-                    // Reverse geocoding using OpenStreetMap Nominatim
                     const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=en&namedetails=1`);
                     if (!res.ok) throw new Error('Reverse geocoding failed');
                     const data = await res.json();
                     
-                    // Helper to force Latin/ASCII only (strips Hindi)
                     const toLatin = (text) => (text || "").replace(/[^\x20-\x7E]/g, "").trim();
 
                     if (data && data.display_name) {
-                        // Aggressively skip the first part (street/suburb) and filter for Latin only
                         const parts = data.display_name.split(',');
-                        const cleanedParts = parts.slice(1) // Skip the first part (street/suburb)
+                        const cleanedParts = parts.slice(1) 
                             .map(p => toLatin(p))
                             .filter(p => p.length > 2);
 
                         if (cleanedParts.length > 0) {
                             setAddress(cleanedParts.slice(0, 3).join(', '));
                         } else {
-                            // Fallback to city/state
                             const city = toLatin(data.address?.city || data.address?.town || data.address?.county);
                             const state = toLatin(data.address?.state);
                             setAddress(city ? (state ? `${city}, ${state}` : city) : "Current Location (Verified)");
@@ -115,7 +111,6 @@ const RequestHelp = ({ username }) => {
             </div>
 
             <form onSubmit={handleSubmit} className="bg-white/5 backdrop-blur-xl shadow-2xl rounded-2xl p-6 sm:p-8 space-y-6 border border-white/10 relative overflow-hidden group">
-                {/* Red alert ambient glow */}
                 <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-red-500/50 via-rose-500 to-red-500/50 block"></div>
                 <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/5 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none transition-all group-hover:bg-red-500/10"></div>
 

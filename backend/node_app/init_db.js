@@ -3,9 +3,7 @@ const { hashPassword } = require('./utils/Hash.util');
 
 async function initDb() {
     try {
-        // --- Feedback Table ---
-        // Using SERIAL for auto-incrementing IDs in PostgreSQL
-        // image_url replaces image_data (storing Cloudinary URLs)
+        //Feedback Table
         await db.run(`CREATE TABLE IF NOT EXISTS feedback (
             id SERIAL PRIMARY KEY,
             timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -19,11 +17,11 @@ async function initDb() {
             is_exported SMALLINT DEFAULT 0
         )`);
 
-        // Migrations helper: Check if is_exported exists (standard for init_db logic)
+        //is_exported and image_url columns adding
         try { await db.run(`ALTER TABLE feedback ADD COLUMN is_exported SMALLINT DEFAULT 0`); } catch (e) {}
         try { await db.run(`ALTER TABLE feedback ADD COLUMN image_url TEXT`); } catch (e) {}
 
-        // --- Users Table ---
+        //Users Table
         await db.run(`CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY,
             username TEXT UNIQUE NOT NULL,
@@ -44,7 +42,7 @@ async function initDb() {
         try { await db.run(`ALTER TABLE users ADD COLUMN id_proof_url TEXT`); } catch (e) {}
 
 
-        // Ensure all migration columns exist for Users
+        //checking columns for user table
         const userCols = [
             "full_name TEXT",
             "email TEXT",
@@ -64,7 +62,7 @@ async function initDb() {
             } catch (e) {}
         }
 
-        // --- Help Requests Table ---
+        //Help Requests Table
         await db.run(`CREATE TABLE IF NOT EXISTS help_requests (
             id SERIAL PRIMARY KEY,
             timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -79,7 +77,7 @@ async function initDb() {
             fulfilled_at TIMESTAMP
         )`);
 
-        // Ensure all migration columns exist for Help Requests
+        //checking columns for help requests table
         const helpCols = [
             "username TEXT",
             "lat DOUBLE PRECISION",
@@ -95,12 +93,11 @@ async function initDb() {
             } catch (e) {}
         }
 
-        // --- Default Admin ---
+        //setting admin in db
         const admin = await db.get("SELECT * FROM users WHERE username = $1", ['admin']);
         if (!admin) {
             try {
                 const defaultPassword = process.env.ADMIN_PASSWORD || 'admin123';
-                // Note: The '?' translation layer handles '?' but here we can just use Postgres style directly or '?'
                 await db.run("INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)",
                     ['admin', await hashPassword(defaultPassword), 'admin']);
                 console.log("Created default admin user.");

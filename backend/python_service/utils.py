@@ -7,18 +7,15 @@ import pickle
 import logging
 from geopy.geocoders import Nominatim
 
-# Setup Logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Constants
-# paths are relative to this file (utils.py)
+
 PYTHON_SERVICE_DIR = os.path.dirname(os.path.abspath(__file__))
-# Both models now live inside the python_service directory
 MODEL_PATH = os.path.join(PYTHON_SERVICE_DIR, "models", "flood_model_4_class.pth")
 TEXT_MODEL_PATH = os.path.join(PYTHON_SERVICE_DIR, "text_model.pkl")
 
-# --- Geocoding ---
+
 def get_coordinates(address):
     geolocator = Nominatim(user_agent="flood_damage_assessment_app_backend")
     try:
@@ -31,12 +28,12 @@ def get_coordinates(address):
         logger.error(f"Geocoding error: {e}")
         return None
 
-# --- Model Loading ---
+
 _image_model = None
 _text_model = None
 _text_vectorizer = None
 
-CLASS_NAMES = ['Destroyed', 'No Damage', 'Low Damage', 'Medium Damage'] # Relabeled to generic damage levels
+CLASS_NAMES = ['Destroyed', 'No Damage', 'Low Damage', 'Medium Damage']
 
 def load_image_model():
     global _image_model
@@ -47,7 +44,7 @@ def load_image_model():
     try:
         model = models.efficientnet_b0(weights=None)
         num_ftrs = model.classifier[1].in_features
-        model.classifier[1] = torch.nn.Linear(num_ftrs, 4) # 4 classes
+        model.classifier[1] = torch.nn.Linear(num_ftrs, 4)
         
         if os.path.exists(MODEL_PATH):
             model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
@@ -123,7 +120,6 @@ def predict_text(text):
         text_vec = vectorizer.transform([text])
         prediction = model.predict(text_vec)[0]
         
-        # Get confidence
         probabilities = model.predict_proba(text_vec)
         confidence = max(probabilities[0])
         

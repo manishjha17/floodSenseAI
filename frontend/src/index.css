@@ -18,10 +18,8 @@ body {
   height: 100%;
 }
 
-/* Custom Scrollbar Styles */
 ::-webkit-scrollbar {
   width: 12px;
-  /* Slightly thicker for better grabbing */
   height: 12px;
 }
 
@@ -32,10 +30,8 @@ body {
 
 ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.15);
-  /* Frosted glass look */
   border-radius: 8px;
   border: 2px solid #000000;
-  /* Padding around thumb */
 }
 
 ::-webkit-scrollbar-thumb:hover {

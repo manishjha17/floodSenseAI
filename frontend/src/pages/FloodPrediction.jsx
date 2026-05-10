@@ -5,7 +5,7 @@ import {
 } from 'recharts';
 import { CloudLightning, MapPin, Navigation, Navigation2, Activity, ShieldAlert, Droplets, Mountain, ShieldCheck, AlertTriangle } from 'lucide-react';
 
-// Smart Location Selector using OpenStreetMap Geocoding API
+
 const LocationSelector = ({ setPosition, locationName, setLocationName }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [isSearching, setIsSearching] = useState(false);
@@ -19,8 +19,6 @@ const LocationSelector = ({ setPosition, locationName, setLocationName }) => {
         setSearchError('');
 
         try {
-            // Free geocoding using Open-Meteo directly via fetch 
-            // (Using fetch avoids our global Axios interceptor from leaking the Admin JWT token)
             const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(searchQuery)}&count=1&format=json`);
             if (!res.ok) throw new Error('Geocoding failed');
             const data = await res.json();
@@ -29,8 +27,6 @@ const LocationSelector = ({ setPosition, locationName, setLocationName }) => {
             if (response.data && response.data.results && response.data.results.length > 0) {
                 const { latitude, longitude, name, country } = response.data.results[0];
                 setPosition([latitude, longitude]);
-
-                // Prevent duplicate naming if name and country are the same (e.g., "Madagascar, Madagascar")
                 const displayName = (country && country !== name) ? `${name}, ${country}` : name;
                 setLocationName(displayName);
 
@@ -53,23 +49,17 @@ const LocationSelector = ({ setPosition, locationName, setLocationName }) => {
                 setPosition([lat, lon]);
                 setSearchQuery("");
                 setSearchError("");
-
-                // Show loading state
                 setLocationName("Locating...");
 
                 try {
-                    // Reverse geocoding using OpenStreetMap Nominatim
                     const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=en&namedetails=1`);
                     if (!res.ok) throw new Error('Reverse geocoding failed');
                     const data = await res.json();
-
-                    // Helper to force Latin/ASCII only (strips Hindi)
                     const toLatin = (text) => (text || "").replace(/[^\x20-\x7E]/g, "").trim();
 
                     if (data && data.address) {
                         const addr = data.address;
 
-                        // Aggressively skip the first part (suburb/street) and focus on City/State
                         let city = toLatin(addr.city || addr.town || addr.county || addr.city_district);
                         let state = toLatin(addr.state || addr.region);
 
@@ -78,9 +68,8 @@ const LocationSelector = ({ setPosition, locationName, setLocationName }) => {
                         } else if (city) {
                             setLocationName(city);
                         } else {
-                            // Fallback to display_name but skip the first segment
                             const parts = (data.display_name || "").split(',');
-                            const cleanParts = parts.slice(1) // Remove first part
+                            const cleanParts = parts.slice(1)
                                 .map(p => toLatin(p))
                                 .filter(p => p.length > 2);
 
@@ -155,7 +144,7 @@ const LocationSelector = ({ setPosition, locationName, setLocationName }) => {
 };
 
 const FloodPrediction = () => {
-    const [position, setPosition] = useState(null); // No default location
+    const [position, setPosition] = useState(null);
     const [locationName, setLocationName] = useState('');
     const [loading, setLoading] = useState(false);
     const [predictionData, setPredictionData] = useState(null);
@@ -167,17 +156,14 @@ const FloodPrediction = () => {
         try {
             const lat = position[0];
             const lon = position[1];
-            
-            // 1. Fetch Open-Meteo Data directly from frontend to bypass Hugging Face IP rate limits
+
             const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=precipitation_sum&hourly=soil_moisture_3_to_9cm&timezone=auto`);
             const floodRes = await fetch(`https://flood-api.open-meteo.com/v1/flood?latitude=${lat}&longitude=${lon}&daily=river_discharge&timezone=auto`);
             const elevationRes = await fetch(`https://api.open-meteo.com/v1/elevation?latitude=${lat}&longitude=${lon}`);
-            
+
             const weather_data = await weatherRes.ok ? await weatherRes.json() : {};
             const flood_data = await floodRes.ok ? await floodRes.json() : {};
             const elevation_data = await elevationRes.ok ? await elevationRes.json() : {};
-
-            // 2. Send pre-fetched data to ML model
             const response = await axios.post(`${import.meta.env.VITE_API_URL}/forecast/`, {
                 latitude: lat,
                 longitude: lon,
@@ -290,7 +276,6 @@ const FloodPrediction = () => {
                 <div className="flex flex-col justify-center">
                     {predictionData ? (
                         <div className={`p-8 rounded-2xl border backdrop-blur-md text-center transition-all duration-500 ease-in-out relative overflow-hidden group ${getRiskColor(predictionData.risk_category)}`}>
-                            {/* Subtle background glow based on risk */}
                             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-current opacity-[0.03] blur-xl rounded-full pointer-events-none"></div>
 
                             <h3 className="text-sm font-bold uppercase tracking-[0.2em] mb-3 opacity-80 text-gray-300">Predictive Risk Level</h3>
@@ -317,15 +302,12 @@ const FloodPrediction = () => {
                             const style = getNotificationStyle(predictionData.risk_category);
                             return (
                                 <div className={`${style.bg} ${style.glow} border ${style.border} p-6 rounded-2xl relative overflow-hidden backdrop-blur-md transition-all duration-500 flex gap-5 items-start`}>
-                                    {/* Glowing side border */}
-                                    <div className={`absolute top-0 left-0 w-1.5 h-full ${style.line}`}></div>
                                     
-                                    {/* Icon Container */}
+                                    <div className={`absolute top-0 left-0 w-1.5 h-full ${style.line}`}></div>
+
                                     <div className={`p-3 rounded-xl ${style.iconBg} shrink-0 flex items-center justify-center border border-white/5 shadow-lg`}>
                                         {style.icon}
                                     </div>
-                                    
-                                    {/* Content */}
                                     <div className="flex-1 pt-1 z-10">
                                         <h4 className={`font-bold tracking-wider uppercase text-xs mb-3 ${style.text} opacity-90`}>
                                             {style.title}
@@ -339,8 +321,7 @@ const FloodPrediction = () => {
                                             ))}
                                         </ul>
                                     </div>
-                                    
-                                    {/* Ambient glow effect in background */}
+
                                     <div className={`absolute -right-20 -top-20 w-64 h-64 ${style.line.split(' ')[0]} opacity-10 blur-[80px] pointer-events-none rounded-full`}></div>
                                 </div>
                             );

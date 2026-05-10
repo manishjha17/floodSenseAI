@@ -1,42 +1,36 @@
 const { Pool } = require('pg');
 
-// Initialize PostgreSQL Pool Configuration
+//setting up the pg pool
 const poolConfig = {
     connectionString: process.env.DATABASE_URL,
 };
 
-// Cloud databases (e.g., Neon, Render, Heroku) strictly require SSL
+//ssl checking for neon
 if (process.env.NODE_ENV === 'production' || 
    (process.env.DATABASE_URL && (process.env.DATABASE_URL.includes('neon.tech') || process.env.DATABASE_URL.includes('render.com') || process.env.DATABASE_URL.includes('amazonaws.com')))) {
     poolConfig.ssl = {
-        rejectUnauthorized: false // Required for some managed databases to allow self-signed certs
+        rejectUnauthorized: false
     };
 }
 
 const pool = new Pool(poolConfig);
 
-// Helper to translate '?' (SQLite style) to '$1, $2...' (PostgreSQL style)
+//syntax for pg '$1' style
 function translateSql(sql) {
     let index = 1;
     return sql.replace(/\?/g, () => `$${index++}`);
 }
 
-/**
- * Helper to run a command (INSERT, UPDATE, DELETE)
- * For INSERTs, use RETURNING id in your SQL to get the ID back.
- */
+//insert,update,delete
 async function run(sql, params = []) {
     const translatedSql = translateSql(sql);
     try {
         const result = await pool.query(translatedSql, params);
-        
-        // Match sqlite3 response structure
         return { 
             id: result.rows[0] ? (result.rows[0].id || null) : null, 
             changes: result.rowCount 
         };
     } catch (err) {
-        // Suppress duplicate column errors during migrations
         if (!err.message || (!err.message.includes('already exists') && !err.message.includes('duplicate column'))) {
             console.error('Error running SQL:', sql);
             console.error(err);
@@ -45,9 +39,7 @@ async function run(sql, params = []) {
     }
 }
 
-/**
- * Helper to get all results (SELECT)
- */
+// fetch multiple rows
 async function all(sql, params = []) {
     const translatedSql = translateSql(sql);
     try {
@@ -60,9 +52,7 @@ async function all(sql, params = []) {
     }
 }
 
-/**
- * Helper to get one result (SELECT)
- */
+// fetch a single row
 async function get(sql, params = []) {
     const translatedSql = translateSql(sql);
     try {

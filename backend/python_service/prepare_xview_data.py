@@ -5,7 +5,7 @@ from PIL import Image
 from tqdm import tqdm
 import pandas as pd
 
-# ================= CONFIGURATION =================
+
 XVIEW_PATH = "/content/drive/MyDrive/xview_data"
 OUTPUT_DATA_PATH = "data_4_class"
 
@@ -15,11 +15,10 @@ CLASSES = {
     "major-damage": "medium_damage",
     "destroyed": "destroyed"
 }
-# ==================================================
+
 
 
 def create_folders():
-    """Creates output folder structure."""
     if os.path.exists(OUTPUT_DATA_PATH):
         print(f"Warning: Output path '{OUTPUT_DATA_PATH}' already exists. Deleting it.")
         shutil.rmtree(OUTPUT_DATA_PATH)
@@ -31,7 +30,6 @@ def create_folders():
 
 
 def get_image_paths(image_id):
-    """Return pre- and post-disaster image paths based on image_id."""
     base_name = image_id.replace("_post_disaster", "").replace("_pre_disaster", "")
     pre_path = os.path.join(XVIEW_PATH, "images", f"{base_name}_pre_disaster.png")
     post_path = os.path.join(XVIEW_PATH, "images", f"{base_name}_post_disaster.png")
@@ -42,7 +40,7 @@ def get_image_paths(image_id):
 
 
 def load_all_annotations():
-    """Loads and concatenates all building annotations."""
+    # loading building labels from json files
     labels_path = os.path.join(XVIEW_PATH, "labels")
     label_files = [f for f in os.listdir(labels_path) if f.endswith(".json")]
 
@@ -69,15 +67,15 @@ def load_all_annotations():
                 all_rows.append(row)
 
         except Exception as e:
-            print(f"⚠️ Could not read {file}: {e}")
+            print(f"Could not read {file}:{e}")
 
     df = pd.DataFrame(all_rows)
-    print(f"✅ Parsed {len(df)} building annotations from {len(label_files)} files.")
+    print(f"Parsed {len(df)} building annotations from {len(label_files)} files.")
     return df
 
 
 def polygon_to_bbox(wkt):
-    """Converts a WKT polygon string to a bounding box (xmin, ymin, xmax, ymax)."""
+    # converting polygon wkt to bounding box coordinates
     try:
         points_str = wkt.replace("POLYGON ((", "").replace("))", "")
         points = [tuple(map(float, p.split())) for p in points_str.split(",")]
@@ -144,7 +142,7 @@ def process_data():
             except Exception:
                 continue
 
-    print("\n--- ✅ Data Preparation Complete! ---")
+    print("\nData Preparation Complete!")
     print(f"Total training images: {train_count}")
     print(f"Total validation images: {val_count}")
     print(f"Data saved to: {OUTPUT_DATA_PATH}")

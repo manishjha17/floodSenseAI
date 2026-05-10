@@ -26,16 +26,16 @@ import DownloadReport from './DownloadReport'
 import AdminPanel from './AdminPanel'
 import FloodPrediction from './FloodPrediction'
 
-// Modal shown when a guest tries to access a restricted page
+//Modal to show when a guest tries to access a restricted page
 const SignInPromptModal = ({ onClose, onLogout }) => {
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-            {/* Backdrop */}
+            {/*Backdrop*/}
             <div
                 className="absolute inset-0 bg-black/70 backdrop-blur-sm"
                 onClick={onClose}
             />
-            {/* Card */}
+            {/*Card*/}
             <div className="relative w-full max-w-sm bg-[#0a0a0a] border border-white/10 shadow-2xl rounded-2xl p-8 flex flex-col items-center gap-5 text-center">
                 <button
                     onClick={onClose}
@@ -44,7 +44,7 @@ const SignInPromptModal = ({ onClose, onLogout }) => {
                     <X size={18} />
                 </button>
 
-                {/* Icon */}
+                {/*Icon*/}
                 <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shadow-[0_0_25px_rgba(99,102,241,0.15)]">
                     <Lock size={28} className="text-indigo-400" />
                 </div>
@@ -81,14 +81,14 @@ const SignInPromptModal = ({ onClose, onLogout }) => {
     )
 }
 
-// Wrapper that gates a component behind sign-in for guests
+//Wrapper that gates a component behind sign-in for guests
 const GuestGuard = ({ userRole, onLogout, children }) => {
     const [showPrompt, setShowPrompt] = useState(true)
 
     if (userRole === 'guest') {
         return (
             <>
-                {/* Blur the underlying page content */}
+                {/*Blurring the underlying page content */}
                 <div className="pointer-events-none select-none blur-sm opacity-40">
                     {children}
                 </div>
@@ -98,7 +98,7 @@ const GuestGuard = ({ userRole, onLogout, children }) => {
                         onLogout={onLogout}
                     />
                 )}
-                {/* If modal dismissed, show a re-trigger button */}
+                {/*If modal dismissed, show a re-trigger button */}
                 {!showPrompt && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
                         <Lock size={40} className="text-indigo-400" />
@@ -240,7 +240,7 @@ const Dashboard = ({ userRole, username, onLogout }) => {
     return (
         <div className="flex h-full w-full bg-transparent overflow-hidden relative">
 
-            {/* Mobile Overlay */}
+            {/*Mobile Overlay*/}
             {isMobileMenuOpen && (
                 <div
                     className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
@@ -248,7 +248,7 @@ const Dashboard = ({ userRole, username, onLogout }) => {
                 />
             )}
 
-            {/* Sidebar */}
+            {/*Sidebar*/}
             <div className={`
                 fixed inset-y-0 left-0 z-50 w-64 flex flex-col bg-[#000000]/95 md:bg-white/5 backdrop-blur-xl border-r border-white/10 
                 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0
@@ -262,7 +262,7 @@ const Dashboard = ({ userRole, username, onLogout }) => {
                         <h1 className="text-xl font-bold text-gray-100 tracking-wide">Flood<span className="text-indigo-400">Sense</span> AI</h1>
                     </div>
 
-                    {/* Close button for mobile */}
+                    {/*Close button for mobile*/}
                     <button
                         onClick={closeMobileMenu}
                         className="md:hidden text-gray-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors"
@@ -272,7 +272,7 @@ const Dashboard = ({ userRole, username, onLogout }) => {
                 </div>
 
                 <nav className="flex-1 mt-6 space-y-1 overflow-y-auto custom-scrollbar">
-                    {/* Damage Assessment — hidden for admins */}
+                    {/*Damage Assessment — hidden for admins*/}
                     {userRole !== 'admin' && (
                         <Link to="/" className={getLinkClass('/')} onClick={closeMobileMenu}>
                             <Map size={18} />
@@ -288,7 +288,7 @@ const Dashboard = ({ userRole, username, onLogout }) => {
                         <span className="font-medium text-sm">Resources</span>
                     </Link>
 
-                    {/* Request Help — only for citizens/guests, hidden for rescuers & admins */}
+                    {/*Request Help — only for citizens/guests, hidden for rescuers & admins*/}
                     {userRole !== 'rescuer' && userRole !== 'admin' && (
                         <Link to="/help" className={getLinkClass('/help')} onClick={closeMobileMenu}>
                             <ShieldAlert size={18} />
@@ -297,7 +297,7 @@ const Dashboard = ({ userRole, username, onLogout }) => {
                         </Link>
                     )}
 
-                    {/* Reports — only for citizens/guests, hidden for rescuers & admins */}
+                    {/*Reports — only for citizens/guests, hidden for rescuers & admins*/}
                     {userRole !== 'rescuer' && userRole !== 'admin' && (
                         <Link to="/report" className={getLinkClass('/report')} onClick={closeMobileMenu}>
                             <Download size={18} />
@@ -306,7 +306,7 @@ const Dashboard = ({ userRole, username, onLogout }) => {
                         </Link>
                     )}
 
-                    {/* Live Emergencies — shown as regular nav tab for rescuers */}
+                    {/*Live Emergencies — shown as regular nav tab for rescuers*/}
                     {userRole === 'rescuer' && (
                         <Link to="/emergencies" className={getLinkClass('/emergencies')} onClick={closeMobileMenu}>
                             <ShieldAlert size={18} />
@@ -314,7 +314,7 @@ const Dashboard = ({ userRole, username, onLogout }) => {
                         </Link>
                     )}
 
-                    {/* Admin section links — shown directly in sidebar for admins */}
+                    {/*Admin section links — shown directly in sidebar for admins*/}
                     {userRole === 'admin' && (
                         <>
                             <Link to="/feedback" className={getLinkClass('/feedback')} onClick={closeMobileMenu}>
@@ -333,7 +333,7 @@ const Dashboard = ({ userRole, username, onLogout }) => {
                     )}
                 </nav>
 
-                {/* Guest sign-in nudge */}
+                {/*Guest sign-in*/}
                 {isGuest && (
                     <div className="mx-3 mb-3 p-3 rounded-xl bg-indigo-500/5 border border-indigo-500/15">
                         <p className="text-xs text-gray-500 mb-2 leading-relaxed">Sign in to unlock all features</p>
@@ -358,10 +358,10 @@ const Dashboard = ({ userRole, username, onLogout }) => {
                 </div>
             </div>
 
-            {/* Main Content Area */}
+            {/*Main Content Area*/}
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-transparent z-10">
 
-                {/* Top Header */}
+                {/*Top Header*/}
                 <header className="flex-shrink-0 h-16 border-b border-white/5 bg-white/[0.02] backdrop-blur-md flex items-center justify-between px-4 md:px-8">
                     <div className="flex items-center gap-3">
                         <button
@@ -409,17 +409,17 @@ const Dashboard = ({ userRole, username, onLogout }) => {
                     />
                 )}
 
-                {/* Main Scrollable Content */}
+                {/*Main Scrollable Content*/}
                 <main className="flex-1 overflow-auto p-4 md:p-8 custom-scrollbar relative z-0">
                     <div className="max-w-6xl mx-auto">
                         <Routes>
                             <Route
                                 path="/"
                                 element={
-                                    userRole === 'admin' 
-                                        ? <Navigate to="/forecast" replace /> 
+                                    userRole === 'admin'
+                                        ? <Navigate to="/forecast" replace />
                                         : <AssessmentForm username={username} userRole={userRole} onLogout={onLogout} />
-                                } 
+                                }
                             />
                             <Route path="/forecast" element={<FloodPrediction />} />
                             <Route path="/resources" element={<FindResources />} />

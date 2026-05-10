@@ -26,7 +26,7 @@ exports.predictImage = async (req, res) => {
             }
         });
 
-        // Cleanup uploaded file
+        
         try {
             fs.unlinkSync(filePath);
         } catch (e) {

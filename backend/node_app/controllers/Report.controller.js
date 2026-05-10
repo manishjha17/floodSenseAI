@@ -10,35 +10,35 @@ exports.generateReport = (req, res) => {
 
     doc.pipe(res);
 
-    // --- Header ---
+    //Header
     doc.save();
-    doc.translate(50, 48); // Position
-    doc.scale(1.5); // Make it slightly larger
+    doc.translate(50, 48);
+    doc.scale(1.5); 
     doc.path('M13 10V3L4 14h7v7l9-11h-7z')
         .lineWidth(2.5)
         .lineCap('round')
         .lineJoin('round')
-        .strokeColor('#06b6d4') // cyan-500
+        .strokeColor('#06b6d4')
         .stroke();
     doc.restore();
 
-    doc.fillColor('#4f46e5') // Indigo-600
+    doc.fillColor('#4f46e5')
         .fontSize(28)
         .font('Helvetica-Bold')
         .text('FloodSense AI', 95, 50, { align: 'left' });
 
-    doc.fillColor('#6b7280') // Gray-500
+    doc.fillColor('#6b7280')
         .fontSize(10)
         .font('Helvetica')
         .text('Automated Damage Assessment System', 85, 80, { align: 'left' })
         .moveDown(2);
 
-    // --- Report Metadata ---
+    //Report ID
     const reportId = 'FS-' + Math.random().toString(36).substr(2, 9).toUpperCase();
     const date = new Date().toLocaleString();
 
     doc.fontSize(16)
-        .fillColor('#111827') // Gray-900
+        .fillColor('#111827')
         .font('Helvetica-Bold')
         .text('Official Damage Assessment Report', { align: 'center', underline: true })
         .moveDown(2);
@@ -49,8 +49,8 @@ exports.generateReport = (req, res) => {
         .text(`Generated On: ${date}`, { align: 'right' })
         .moveDown(2);
 
-    // --- Property Information Section ---
-    doc.rect(50, doc.y, 495, 20).fill('#f3f4f6'); // Light gray background
+    //Property Information Section
+    doc.rect(50, doc.y, 495, 20).fill('#f3f4f6'); 
     doc.fillColor('#1f2937').fontSize(12).font('Helvetica-Bold').text('PROPERTY INFORMATION', 55, doc.y + 5);
     doc.moveDown(1.5);
 
@@ -58,13 +58,13 @@ exports.generateReport = (req, res) => {
         .font('Helvetica').text(address || 'N/A');
     doc.moveDown(2);
 
-    // --- AI Assessment Results Section ---
+    //AI assessment Results
     doc.rect(50, doc.y, 495, 20).fill('#f3f4f6');
     doc.fillColor('#1f2937').fontSize(12).font('Helvetica-Bold').text('AI ANALYSIS RESULTS', 55, doc.y + 5);
     doc.moveDown(1.5);
 
-    // Color code the prediction
-    let predColor = '#10b981'; // Green for No/Low
+    
+    let predColor = '#10b981';
     if (prediction && prediction.toLowerCase().includes('medium')) predColor = '#f59e0b'; // Amber
     if (prediction && prediction.toLowerCase().includes('destroy')) predColor = '#ef4444'; // Red
 
@@ -78,7 +78,7 @@ exports.generateReport = (req, res) => {
         .font('Helvetica').text(confVal);
     doc.moveDown(2);
 
-    // --- Detailed Observations Section ---
+    //review submitted by user for damage of building
     doc.rect(50, doc.y, 495, 20).fill('#f3f4f6');
     doc.fillColor('#1f2937').fontSize(12).font('Helvetica-Bold').text('DETAILED OBSERVATIONS', 55, doc.y + 5);
     doc.moveDown(1.5);
@@ -92,7 +92,7 @@ exports.generateReport = (req, res) => {
 
     const bottomY = doc.page.height - 100;
 
-    // --- Official Stamp ---
+    //stamp
     doc.save();
     doc.translate(450, bottomY - 50);
 
@@ -100,25 +100,25 @@ exports.generateReport = (req, res) => {
     const centerY = 0;
     const radius = 35;
 
-    // Outer circle
+    
     doc.circle(centerX, centerY, radius).lineWidth(2).strokeColor('#dc2626').stroke();
-    // Inner circle
+    
     doc.circle(centerX, centerY, radius - 4).lineWidth(1).strokeColor('#dc2626').stroke();
 
-    // "VERIFIED" text in the center
+
     doc.fontSize(10).font('Helvetica-Bold').fillColor('#dc2626').text('VERIFIED', centerX - radius, centerY - 5, {
         width: radius * 2,
         align: 'center'
     });
 
-    // Add some text around the edge
+    
     doc.fontSize(6).font('Helvetica').fillColor('#dc2626')
         .text('FLOODSENSE AI', centerX - 35, centerY - 20, { width: 70, align: 'center' })
         .text('SYSTEM', centerX - 35, centerY + 15, { width: 70, align: 'center' });
 
     doc.restore();
 
-    // --- Footer & Disclaimer ---
+    //Footer
     doc.moveTo(50, bottomY).lineTo(545, bottomY).strokeColor('#d1d5db').stroke();
 
     doc.fontSize(8).fillColor('#9ca3af').font('Helvetica-Oblique').text(
@@ -126,6 +126,6 @@ exports.generateReport = (req, res) => {
         50, bottomY + 15, { width: 495, align: 'center' }
     );
 
-    // Finalize PDF file
+    //ending pdff
     doc.end();
 };

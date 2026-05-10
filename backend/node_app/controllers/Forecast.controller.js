@@ -9,7 +9,7 @@ exports.searchLocation = async (req, res) => {
 
         console.log(`[Geocoding Request] Proxying search for: ${name}`);
 
-        // Call Open-Meteo Geocoding API from the server
+        // Calling Open-Meteo Geocoding API from server
         const response = await axios.get(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=1&format=json`);
 
         res.json(response.data);

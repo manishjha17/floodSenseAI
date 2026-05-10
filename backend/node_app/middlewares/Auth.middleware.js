@@ -1,21 +1,21 @@
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_jwt_key_here'; // Fallback for dev
+const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_jwt_key_here';
 
 const verifyToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     
-    // Check if the auth header starts with 'Bearer '
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(403).json({ detail: "A token is required for authentication" });
     }
 
-    // Extract the token part
+    
     const token = authHeader.split(' ')[1];
 
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded; // Attach the decoded user payload to the request
+        req.user = decoded;
     } catch (err) {
         return res.status(401).json({ detail: "Invalid Token" });
     }

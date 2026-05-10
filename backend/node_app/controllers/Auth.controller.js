@@ -54,7 +54,7 @@ exports.register = async (req, res) => {
 
         const status = role === 'rescuer' ? 'pending' : 'active';
 
-        // Cloudinary Upload Logic for Rescuer ID Proofs
+        //ID proof upload to cloudinary
         let idProofUrl = null;
         if (id_proof_data && id_proof_data.startsWith('data:image')) {
             const uploadResponse = await cloudinary.uploader.upload(id_proof_data, {
@@ -74,7 +74,7 @@ exports.register = async (req, res) => {
             organization,
             badgeNumber: badge_number,
             address,
-            idProofUrl: idProofUrl, // Pass cloud URL to model
+            idProofUrl: idProofUrl,
             status,
             securityQuestion: security_question,
             securityAnswer: security_answer.toLowerCase().trim()

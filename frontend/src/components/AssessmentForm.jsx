@@ -18,14 +18,14 @@ const AssessmentForm = ({ username, userRole, onLogout }) => {
     const handleFeedback = async (status) => {
         if (!result) return
 
-        // Block guests from submitting feedback to the DB
+        //blocking guests from submitting feedback to the DB
         if (userRole === 'guest') {
             setShowLoginPrompt(true)
             return
         }
 
         try {
-            // Convert image to base64 if available
+            //converting image to base64
             let imageData = null
             if (image) {
                 const reader = new FileReader()
@@ -53,7 +53,6 @@ const AssessmentForm = ({ username, userRole, onLogout }) => {
 
     const handleAddressChange = async (e) => {
         setAddress(e.target.value)
-        // Basic debounce or manual trigger preferred for geocoding
     }
 
     const handleGeocode = async () => {
@@ -77,29 +76,28 @@ const AssessmentForm = ({ username, userRole, onLogout }) => {
                 setCoordinates({ lat, lon });
                 setSearchError("");
 
-                // Show loading state in address field
+                //Show loading state in address field
                 setAddress("Locating...");
 
                 try {
-                    // Reverse geocoding using OpenStreetMap Nominatim with namedetails
+                    //reverse geocode
                     const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=en&namedetails=1`);
                     if (!res.ok) throw new Error('Reverse geocoding failed');
                     const data = await res.json();
                     
-                    // Helper to force Latin/ASCII only
+                    
                     const toLatin = (text) => (text || "").replace(/[^\x20-\x7E]/g, "").trim();
 
                     if (data && data.display_name) {
-                        // Aggressively skip the first part (street/suburb) and filter for Latin only
                         const parts = data.display_name.split(',');
-                        const cleanedParts = parts.slice(1) // Remove the first part
+                        const cleanedParts = parts.slice(1) 
                             .map(p => toLatin(p))
                             .filter(p => p.length > 2);
 
                         if (cleanedParts.length > 0) {
                             setAddress(cleanedParts.slice(0, 3).join(', '));
                         } else {
-                            // Fallback to city/state directly from address object
+                            
                             const city = toLatin(data.address?.city || data.address?.town || data.address?.county);
                             const state = toLatin(data.address?.state);
                             if (city) {
@@ -137,8 +135,6 @@ const AssessmentForm = ({ username, userRole, onLogout }) => {
         const formData = new FormData()
         if (image) formData.append('file', image)
 
-        // Also send text for prediction if needed, but endpoint separates them currently.
-        // Let's call both or just image first.
 
         try {
             let imagePred = null
@@ -165,7 +161,7 @@ const AssessmentForm = ({ username, userRole, onLogout }) => {
 
             setResult(assessmentResult)
 
-            // Save to localStorage so Reports page can use actual data
+            //saving to localstorage for the reports page
             localStorage.setItem(`latest_assessment_${username || 'guest'}`, JSON.stringify({
                 address: address,
                 prediction: imagePred?.prediction || textPred?.prediction || "Unknown",
@@ -185,7 +181,7 @@ const AssessmentForm = ({ username, userRole, onLogout }) => {
     const handleGenerateReport = async () => {
         if (!result) return
 
-        // Block guests from generating reports
+        //no guests allowed to generate reports
         if (userRole === 'guest') {
             setShowLoginPrompt(true)
             return
@@ -230,7 +226,7 @@ const AssessmentForm = ({ username, userRole, onLogout }) => {
 
     return (
         <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* Progress Step Indicator */}
+            {/*steps indicator*/}
             <div className="flex items-center justify-between mb-8 px-4 relative">
                 <div className="absolute left-4 right-4 top-4 h-[2px] bg-white/5 -z-10 mt-[-1px]"></div>
                 <div
@@ -265,7 +261,7 @@ const AssessmentForm = ({ username, userRole, onLogout }) => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-8">
-                    {/* Address Section */}
+                    {/*address info*/}
                     <div className="space-y-2">
                         <label className="block text-sm font-medium text-gray-300">Property Address</label>
                         <div className="flex gap-3">
@@ -303,7 +299,7 @@ const AssessmentForm = ({ username, userRole, onLogout }) => {
                         </div>
                     </div>
 
-                    {/* Map Visualization */}
+                    {/*showing map*/}
                     {coordinates && (
                         <div className="mt-4 rounded-xl overflow-hidden border border-white/10 h-[300px] relative">
                             <MapComponent lat={coordinates.lat} lon={coordinates.lon} address={address} />
@@ -311,9 +307,9 @@ const AssessmentForm = ({ username, userRole, onLogout }) => {
                         </div>
                     )}
 
-                    {/* Grid for Upload & Text */}
+                    {/*Grid for Upload & Text*/}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {/* Image Upload */}
+                        {/*Image Upload*/}
                         <div className="space-y-2">
                             <label className="block text-sm font-medium text-gray-300">Damage Evidence (Image)</label>
                             <label
@@ -347,7 +343,7 @@ const AssessmentForm = ({ username, userRole, onLogout }) => {
                             </label>
                         </div>
 
-                        {/* Text Report */}
+                        {/*Text Report*/}
                         <div className="space-y-2 flex flex-col">
                             <div className="flex justify-between items-center">
                                 <label className="block text-sm font-medium text-gray-300">Detailed Report / Notes</label>
@@ -367,7 +363,7 @@ const AssessmentForm = ({ username, userRole, onLogout }) => {
                         </div>
                     </div>
 
-                    {/* Submit */}
+                    {/*Submit*/}
                     <div className="pt-4">
                         <button
                             type="submit"
@@ -392,7 +388,7 @@ const AssessmentForm = ({ username, userRole, onLogout }) => {
                     </div>
                 </form>
 
-                {/* Results Section */}
+                {/*Results Section*/}
                 {result && (
                     <div className="mt-12 pt-8 border-t border-white/10 animate-in slide-in-from-bottom-8 duration-700">
                         <div className="flex items-center gap-3 mb-6">
@@ -403,7 +399,7 @@ const AssessmentForm = ({ username, userRole, onLogout }) => {
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            {/* Image Result Card */}
+                            {/*Image Result Card*/}
                             <div className="relative overflow-hidden rounded-2xl bg-black/40 border border-white/5 p-6 group hover:border-white/10 transition-colors">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl -mr-16 -mt-16 transition-all group-hover:bg-indigo-500/20"></div>
                                 <dt className="text-sm font-medium text-gray-400 flex items-center gap-2 mb-2">
@@ -424,7 +420,7 @@ const AssessmentForm = ({ username, userRole, onLogout }) => {
                                 </p>
                             </div>
 
-                            {/* Text Result Card */}
+                            {/*Text Result Card*/}
                             <div className="relative overflow-hidden rounded-2xl bg-black/40 border border-white/5 p-6 group hover:border-white/10 transition-colors">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl -mr-16 -mt-16 transition-all group-hover:bg-blue-500/20"></div>
                                 <dt className="text-sm font-medium text-gray-400 flex items-center gap-2 mb-2">
@@ -446,7 +442,7 @@ const AssessmentForm = ({ username, userRole, onLogout }) => {
                             </div>
                         </div>
 
-                        {/* Actions */}
+                        {/*Response from user*/}
                         <div className="mt-8 flex flex-wrap gap-4 items-center justify-between bg-black/20 p-4 rounded-xl border border-white/5">
                             <button
                                 onClick={handleGenerateReport}
@@ -483,7 +479,7 @@ const AssessmentForm = ({ username, userRole, onLogout }) => {
                 )}
             </div>
 
-            {/* Premium Login Prompt for Guests */}
+            {/*Login prompt for guest*/}
             {showLoginPrompt && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 animate-in fade-in duration-200">
                     <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setShowLoginPrompt(false)} />
